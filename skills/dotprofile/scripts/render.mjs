@@ -7,6 +7,7 @@
  */
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { parseArgs, run } from "./lib/args.mjs";
 import { readJson, resolve } from "./lib/config.mjs";
 import { labelsFor } from "./lib/i18n.mjs";
@@ -31,7 +32,8 @@ export function render(config, factsFile) {
   };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run only as a script, not when imported. pathToFileURL handles Windows paths (C:\...).
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   run(async (argv) => {
     const { options } = parseArgs(argv);
     const config = await readJson(options.config ?? "dotprofile.json");
