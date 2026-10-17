@@ -9,6 +9,7 @@ The configuration holds the **choices, not the result**. Rendering it again with
   "style": "terminal",
   "variant": "solarized",
   "language": "en",
+  "showProjects": true,
   "tagline": { "text": "Backend developer, mostly Go", "by": "user" },
   "bio": "I write command-line tools and small web services, mostly in Go and TypeScript.",
   "repos": [
@@ -26,6 +27,7 @@ The configuration holds the **choices, not the result**. Rendering it again with
 | `style` | `terminal` (the only style for now). |
 | `variant` | `solarized` or `gruvbox`. Each has a dark and a light version. |
 | `language` | Language of the fixed labels: `en` or `it`. Write the texts in the same language. |
+| `showProjects` | `true`: a table of the projects and their latest commits, and their names in the header. `false` (default): the repositories are only a source for the bio and the stack tree, and no project is named. |
 | `tagline` | Optional. One line under the name in the header, at most 72 characters. |
 | `bio` | Optional. The "whoami" section. |
 | `repos` | In display order. An entry is `"owner/name"` or `{ "repo", "description" }`. Without a description, the GitHub description is used, if any. |

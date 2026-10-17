@@ -31,3 +31,10 @@ test("texts written by the user are not checked", () => {
   const findings = checkConfig(config, { profile: { login: "octocat" }, repos: [facts] });
   assert.deepEqual(findings.map((finding) => finding.where), ["bio"]);
 });
+
+test("with hidden projects, no text may name a repository", () => {
+  const factsFile = { profile: { login: "octocat" }, repos: [facts] };
+  const config = { repos: ["octocat/linkcheck"], bio: { text: "I made linkcheck.", by: "user" } };
+  assert.match(checkConfig(config, factsFile)[0].problems[0], /names linkcheck/);
+  assert.deepEqual(checkConfig({ ...config, showProjects: true }, factsFile), []);
+});
