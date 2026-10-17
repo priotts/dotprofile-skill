@@ -1,7 +1,7 @@
 {
   "name": "dotprofile",
   "description": "Writes your GitHub profile README from facts read from your repositories, never invented ones.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": { "name": "priotts" },
   "homepage": "https://github.com/priotts/dotprofile-skill",
   "repository": "https://github.com/priotts/dotprofile-skill",

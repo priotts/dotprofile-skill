@@ -31,7 +31,7 @@ The configuration holds the **choices, not the result**. Rendering it again with
 | `tagline` | Optional. One line under the name in the header, at most 72 characters. |
 | `bio` | Optional. The "whoami" section. |
 | `repos` | In display order. An entry is `"owner/name"` or `{ "repo", "description" }`. Without a description, the GitHub description is used, if any. |
-| `credit` | `false` removes the small "Generated with dotprofile" line. Default `true`. |
+| `credit` | `false` removes the small "Generated with dotprofile" line, which links to this skill's repository. Default `true`. It is independent of `showProjects`: ask the user, never remove it on your own. |
 
 ## Texts
 
