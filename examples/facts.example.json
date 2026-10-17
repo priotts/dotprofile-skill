@@ -1,0 +1,157 @@
+{
+  "extractedAt": "2026-10-17T00:00:00.000Z",
+  "profile": {
+    "login": "octocat",
+    "name": "The Octocat",
+    "location": "San Francisco"
+  },
+  "repos": [
+    {
+      "name": "linkcheck",
+      "fullName": "octocat/linkcheck",
+      "url": "https://github.com/octocat/linkcheck",
+      "description": "Checks every link of a static site",
+      "topics": [
+        "links",
+        "cli"
+      ],
+      "license": {
+        "name": "MIT License",
+        "spdx": "MIT"
+      },
+      "stars": 3,
+      "forks": 0,
+      "visibility": "public",
+      "createdAt": "2026-01-10T10:00:00Z",
+      "pushedAt": "2026-09-30T10:00:00Z",
+      "languages": [
+        {
+          "language": "TypeScript",
+          "bytes": 12000,
+          "percent": 100
+        }
+      ],
+      "signals": {
+        "tests": true,
+        "ci": true,
+        "container": false,
+        "readme": true,
+        "docs": false,
+        "monorepo": false
+      },
+      "manifests": [
+        "package.json"
+      ],
+      "dependencies": [
+        "commander"
+      ],
+      "frameworks": [
+        "React"
+      ],
+      "scripts": [
+        "build",
+        "test"
+      ],
+      "runtimes": [
+        {
+          "runtime": "Node.js",
+          "version": ">=22",
+          "source": "package.json"
+        }
+      ],
+      "history": {
+        "commits": 42,
+        "firstCommitAt": "2026-01-10T10:00:00Z",
+        "lastCommitAt": "2026-09-30T10:00:00Z",
+        "spanDays": 263,
+        "contributors": 1,
+        "lastCommit": {
+          "sha": "abc1234",
+          "subject": "Follow redirects",
+          "at": "2026-09-30T10:00:00Z"
+        }
+      },
+      "derived": {
+        "ageDays": 279,
+        "daysSinceLastCommit": 16,
+        "recentlyMaintained": true,
+        "collaboration": "solo",
+        "toolingMaturity": 2
+      }
+    },
+    {
+      "name": "tiny-kv",
+      "fullName": "octocat/tiny-kv",
+      "url": "https://github.com/octocat/tiny-kv",
+      "description": "A key-value store in a single file",
+      "topics": [
+        "database"
+      ],
+      "license": {
+        "name": "MIT License",
+        "spdx": "MIT"
+      },
+      "stars": 0,
+      "forks": 0,
+      "visibility": "public",
+      "createdAt": "2026-01-10T10:00:00Z",
+      "pushedAt": "2026-09-30T10:00:00Z",
+      "languages": [
+        {
+          "language": "Go",
+          "bytes": 10000,
+          "percent": 98
+        },
+        {
+          "language": "Dockerfile",
+          "bytes": 200,
+          "percent": 2
+        }
+      ],
+      "signals": {
+        "tests": true,
+        "ci": false,
+        "container": true,
+        "readme": false,
+        "docs": false,
+        "monorepo": false
+      },
+      "manifests": [
+        "go.mod"
+      ],
+      "dependencies": [
+        "github.com/spf13/cobra"
+      ],
+      "frameworks": [
+        "Cobra"
+      ],
+      "runtimes": [
+        {
+          "runtime": "Go",
+          "version": "1.22",
+          "source": "go.mod"
+        }
+      ],
+      "history": {
+        "commits": 87,
+        "firstCommitAt": "2025-11-02T09:00:00Z",
+        "lastCommitAt": "2026-10-12T18:00:00Z",
+        "spanDays": 344,
+        "contributors": 2,
+        "lastCommit": {
+          "sha": "9f2c1e4",
+          "subject": "Compact the log on startup",
+          "at": "2026-10-12T18:00:00Z"
+        }
+      },
+      "derived": {
+        "ageDays": 348,
+        "daysSinceLastCommit": 4,
+        "recentlyMaintained": true,
+        "collaboration": "collaborative",
+        "toolingMaturity": 2
+      }
+    }
+  ],
+  "warnings": {}
+}
