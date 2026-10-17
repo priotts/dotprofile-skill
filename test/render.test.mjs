@@ -52,3 +52,11 @@ test("rejects unknown repositories, variants and too long taglines", () => {
   assert.throws(() => render({ ...config, variant: "neon" }, factsFile), /no variant "neon"/);
   assert.throws(() => render({ ...config, tagline: "x".repeat(80) }, factsFile), /fits 72/);
 });
+
+test("renders a profile without repositories", () => {
+  const files = render({ repos: [], bio: "Hi." }, { profile: { login: "octocat", location: "Rome" }, repos: [] });
+  assert.match(files["README.md"], /### `\$ whoami`\n\nHi\.\n\nRome/);
+  assert.doesNotMatch(files["README.md"], /ls -l|tree stack|git log/);
+  assert.doesNotMatch(files["header-dark.svg"], /0 projects|ls projects/);
+  assert.match(files["header-dark.svg"], />Rome</);
+});

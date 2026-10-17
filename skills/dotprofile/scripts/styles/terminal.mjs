@@ -80,7 +80,9 @@ function header(input, variantName, theme) {
   const barY = TOP + lines.length * LINE + 6;
   const height = barY + 30;
   const top = combinedLanguages(repos.map(({ facts }) => facts))[0];
-  const status = [labels.projects(repos.length), top && `${top.language} ${top.percent}%`].filter(Boolean).join(" · ");
+  const status = [repos.length > 0 && labels.projects(repos.length), top && `${top.language} ${top.percent}%`, profile.location]
+    .filter(Boolean)
+    .join(" · ");
   const label = [profile.name ?? profile.login, tagline].filter(Boolean).join(", ");
 
   const rows = lines.map((line, index) => {

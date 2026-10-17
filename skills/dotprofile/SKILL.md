@@ -56,6 +56,11 @@ node ${CLAUDE_SKILL_DIR}/scripts/extract.mjs list [--user <login>]
 Show the list compactly and propose a selection of 3 to 8 repositories: recently pushed, with a
 description, not forks, not archived. The user decides.
 
+Showing no repository at all is a valid choice: the README then has the header and the "whoami"
+section only, built from the profile and from what the user writes. Use `"repos": []` and skip
+step 3's repository list (run `extract.mjs facts` with `--user <login>` and no repository, to
+read the profile).
+
 **Private repositories**: the README is public. If the user picks a private repository, tell them
 its name and description will become public (it is shown without a link, and its commit messages
 are never shown). Include it only if they confirm.
