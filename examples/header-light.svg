@@ -10,6 +10,6 @@
   <text x="24" y="170" opacity="0"><tspan fill="#859900">octocat@github:~$ </tspan><tspan fill="#586e75">█<animate attributeName="opacity" values="1;0;1" dur="1s" begin="3.26s" repeatCount="4" fill="freeze"/></tspan><set attributeName="opacity" to="1" begin="3.26s" fill="freeze"/></text>
   <path d="M0.5 202 H799.5 V221.5 a10 10 0 0 1 -10 10 H10.5 a10 10 0 0 1 -10 -10 Z" fill="#eee8d5"/>
   <text x="16" y="222" font-size="13"><tspan fill="#859900" font-weight="bold">[octocat]</tspan><tspan fill="#93a1a1"> 0:profile*</tspan></text>
-  <text x="784" y="222" font-size="13" text-anchor="end" fill="#93a1a1">2 projects · TypeScript 54.1%</text>
+  <text x="784" y="222" font-size="13" text-anchor="end" fill="#93a1a1">2 projects · TypeScript 54.1% · San Francisco</text>
 </g>
 </svg>

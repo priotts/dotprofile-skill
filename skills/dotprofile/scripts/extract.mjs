@@ -4,8 +4,9 @@
  *
  *   node extract.mjs list [--user <login>]
  *       The repositories the user owns, most recently pushed first, as JSON.
- *   node extract.mjs facts <owner/repo>... [--user <login>] [--out facts.json]
- *       The facts of each repository plus the user's profile, written to facts.json.
+ *   node extract.mjs facts [<owner/repo>...] [--user <login>] [--out facts.json]
+ *       The facts of each repository plus the user's profile, written to facts.json. With no
+ *       repository, only the profile.
  *
  * Token: GH_TOKEN or GITHUB_TOKEN, else `gh auth token`. Without one only public data is read.
  */
@@ -26,20 +27,24 @@ run(async (argv) => {
     console.log(JSON.stringify(await listRepositories(client, options.user), null, 2));
     return;
   }
-  if (command !== "facts" || repos.length === 0) {
+  if (command !== "facts") {
     throw new Error("usage: extract.mjs list [--user <login>] | extract.mjs facts <owner/repo>... [--user <login>] [--out facts.json]");
   }
 
   const now = new Date();
   const out = options.out ?? "facts.json";
-  const login = options.user ?? (token ? undefined : repos[0].split("/")[0]);
+  // With no repository the README only has the profile: facts with --user and nothing else.
+  const login = options.user ?? (token ? undefined : repos[0]?.split("/")[0]);
+  if (!token && !login) throw new Error("without a token, pass --user <login>");
   const warnings = {};
   let profile;
   try {
     profile = await readProfile(client, login);
   } catch (error) {
     // A token limited to some repositories may not read profiles: the README just has less.
-    profile = { login: login ?? repos[0].split("/")[0] };
+    const fallback = login ?? repos[0]?.split("/")[0];
+    if (!fallback) throw new Error(`could not read the profile (${error.message}): pass --user <login>`);
+    profile = { login: fallback };
     warnings.profile = [`could not read the profile (${error.message}): only the login is known.`];
   }
   const result = { extractedAt: now.toISOString(), profile, repos: [], warnings };
