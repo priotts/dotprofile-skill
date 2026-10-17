@@ -1,0 +1,54 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { extractFacts } from "../skills/dotprofile/scripts/lib/facts.mjs";
+import { render } from "../skills/dotprofile/scripts/render.mjs";
+import { STYLES } from "../skills/dotprofile/scripts/styles/index.mjs";
+import { NOW, snapshot } from "./fixtures.mjs";
+
+const publicRepo = extractFacts(snapshot(), NOW).facts;
+const privateRepo = extractFacts(snapshot({ metadata: { name: "secret", visibility: "private" } }), NOW).facts;
+const factsFile = { profile: { login: "octocat", name: "The Octocat & co" }, repos: [publicRepo, privateRepo] };
+const config = {
+  variant: "gruvbox",
+  tagline: "Links <checked>",
+  bio: "I check links.",
+  repos: [{ repo: "octocat/linkcheck", description: "Checks links | fast" }, "octocat/secret"],
+};
+
+test("renders the README and both headers", () => {
+  const files = render(config, factsFile);
+  assert.deepEqual(Object.keys(files), ["README.md", "header-dark.svg", "header-light.svg"]);
+  const readme = files["README.md"];
+  assert.match(readme, /srcset="header-dark\.svg"/);
+  assert.match(readme, /\[\*\*linkcheck\*\*\]\(https:\/\/github\.com\/octocat\/linkcheck\) ★3/);
+  assert.match(readme, /Checks links \\\| fast/);
+  assert.match(readme, /abc1234 \(linkcheck\) Follow redirects/);
+  // A private repository has no link and never shows its commits.
+  assert.match(readme, /\*\*secret\*\* <sub>private<\/sub>/);
+  assert.equal(readme.match(/Follow redirects/g).length, 1);
+});
+
+test("is deterministic", () => {
+  assert.deepEqual(render(config, factsFile), render(config, factsFile));
+});
+
+test("escapes text in the SVG and uses the variant colors", () => {
+  const svg = render(config, factsFile)["header-dark.svg"];
+  assert.match(svg, /Links &lt;checked&gt;/);
+  assert.match(svg, /The Octocat &amp; co/);
+  assert.match(svg, new RegExp(STYLES.terminal.variants.gruvbox.dark.bg));
+  assert.doesNotMatch(svg, /<script|<style|repeatCount="indefinite"/);
+});
+
+test("works with a profile and repositories that have few facts", () => {
+  const bare = extractFacts(snapshot({ metadata: { description: undefined, topics: [] }, tree: { complete: true, entries: [] }, files: new Map(), history: null }), NOW).facts;
+  const files = render({ repos: ["octocat/linkcheck"] }, { profile: { login: "octocat" }, repos: [bare] });
+  assert.doesNotMatch(files["README.md"], /undefined|null/);
+  assert.doesNotMatch(files["header-light.svg"], /undefined|null/);
+});
+
+test("rejects unknown repositories, variants and too long taglines", () => {
+  assert.throws(() => render({ repos: ["octocat/missing"] }, factsFile), /not in the facts/);
+  assert.throws(() => render({ ...config, variant: "neon" }, factsFile), /no variant "neon"/);
+  assert.throws(() => render({ ...config, tagline: "x".repeat(80) }, factsFile), /fits 72/);
+});

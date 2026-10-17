@@ -1,0 +1,43 @@
+# dotprofile.json
+
+The configuration holds the **choices, not the result**. Rendering it again with the same
+`facts.json` always gives the same files.
+
+```json
+{
+  "user": "octocat",
+  "style": "terminal",
+  "variant": "solarized",
+  "language": "en",
+  "tagline": { "text": "Backend developer, mostly Go", "by": "user" },
+  "bio": "I write command-line tools and small web services, mostly in Go and TypeScript.",
+  "repos": [
+    { "repo": "octocat/linkcheck", "description": "Checks every link of a static site before it is published. Go, with CI." },
+    { "repo": "octocat/notes", "description": { "text": "My notes on distributed systems", "by": "user" } },
+    "octocat/dotfiles"
+  ],
+  "credit": true
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `user` | GitHub login. |
+| `style` | `terminal` (the only style for now). |
+| `variant` | `solarized` or `gruvbox`. Each has a dark and a light version. |
+| `language` | Language of the fixed labels: `en` or `it`. Write the texts in the same language. |
+| `tagline` | Optional. One line under the name in the header, at most 72 characters. |
+| `bio` | Optional. The "whoami" section. |
+| `repos` | In display order. An entry is `"owner/name"` or `{ "repo", "description" }`. Without a description, the GitHub description is used, if any. |
+| `credit` | `false` removes the small "Generated with dotprofile" line. Default `true`. |
+
+## Texts
+
+A text is either:
+
+- a **string**: written by Claude from the facts. `check.mjs` verifies it.
+- `{ "text": "...", "by": "user" }`: written or confirmed by the user. Not verified, because the
+  user is a source of facts.
+
+Mark a text as the user's only when the user wrote it, changed it, or explicitly confirmed a
+statement the checker flagged.

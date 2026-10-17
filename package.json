@@ -1,0 +1,10 @@
+{
+  "name": "dotprofile-skill",
+  "private": true,
+  "type": "module",
+  "description": "Development only: the skill itself needs no installation.",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  }
+}

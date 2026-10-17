@@ -1,0 +1,12 @@
+{
+  "name": "dotprofile",
+  "description": "The dotprofile skill: a GitHub profile README built from facts.",
+  "owner": { "name": "priotts" },
+  "plugins": [
+    {
+      "name": "dotprofile",
+      "source": "./",
+      "description": "Writes your GitHub profile README from facts read from your repositories, never invented ones."
+    }
+  ]
+}

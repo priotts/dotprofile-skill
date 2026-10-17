@@ -1,0 +1,24 @@
+{
+  "user": "octocat",
+  "style": "terminal",
+  "variant": "solarized",
+  "language": "en",
+  "tagline": {
+    "text": "I build small tools that do one thing",
+    "by": "user"
+  },
+  "bio": {
+    "text": "I like command-line tools and storage engines. Mostly Go and TypeScript.",
+    "by": "user"
+  },
+  "repos": [
+    {
+      "repo": "octocat/tiny-kv",
+      "description": "Key-value store in a single file, with a Cobra CLI. Go, tested."
+    },
+    {
+      "repo": "octocat/linkcheck",
+      "description": "Checks every link of a static site. TypeScript, tested, with CI."
+    }
+  ]
+}
