@@ -87,6 +87,9 @@ npm test                 # node:test, no dependencies
 node examples/build.mjs  # regenerate the example
 ```
 
+Raise `version` in [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) with every change:
+Claude Code updates an installed plugin only when its version changes.
+
 ## License
 
 [MIT](LICENSE)
