@@ -23,6 +23,7 @@ export function render(config, factsFile) {
   const input = {
     ...resolve(config, factsFile),
     labels: labelsFor(config.language),
+    showProjects: config.showProjects === true,
     credit: config.credit === false ? undefined : CREDIT_LINK,
   };
   return {

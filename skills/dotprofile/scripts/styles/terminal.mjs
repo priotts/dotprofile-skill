@@ -37,8 +37,9 @@ const TYPE_STEP = 0.07;
 export const MAX_LINE_CHARS = 72;
 
 /**
- * input: { profile, repos: [{ facts, description? }], tagline?, labels }
- * Returns the SVG for one theme ("dark" or "light") of the variant.
+ * input: { profile, repos: [{ facts, description? }], tagline?, labels, showProjects }
+ * Returns the SVG for one theme ("dark" or "light") of the variant. Project names appear only
+ * with `showProjects`: otherwise the repositories are a source of facts, never named.
  */
 function header(input, variantName, theme) {
   const colors = style.variants[variantName]?.[theme];
@@ -51,7 +52,7 @@ function header(input, variantName, theme) {
 
   const names = [];
   let used = 0;
-  for (const { facts } of repos) {
+  for (const { facts } of input.showProjects ? repos : []) {
     if (used + facts.name.length + 2 > MAX_LINE_CHARS) break;
     names.push(facts.name);
     used += facts.name.length + 2;
@@ -119,7 +120,11 @@ function header(input, variantName, theme) {
 const appear = (seconds) => `<set attributeName="opacity" to="1" begin="${fmt(seconds)}s" fill="freeze"/>`;
 const fmt = (seconds) => (Math.round(seconds * 100) / 100).toString();
 
-/** input: { profile, repos: [{ facts, description? }], bio?, labels, credit } → Markdown. */
+/**
+ * input: { profile, repos: [{ facts, description? }], bio?, labels, credit, showProjects } →
+ * Markdown. The project table and the git log name the projects, so they need `showProjects`;
+ * the stack tree only sums the repositories up.
+ */
 function body(input) {
   const { profile, repos, bio, labels } = input;
   const out = [];
@@ -140,7 +145,7 @@ function body(input) {
   ].filter(Boolean);
   if (about.length > 0) out.push("### `$ whoami`", "", about.join("\n\n"), "");
 
-  if (repos.length > 0) {
+  if (input.showProjects && repos.length > 0) {
     out.push("### `$ ls -l projects/`", "");
     out.push(`| ${labels.project} | ${labels.whatItIs} | ${labels.stack} | ${labels.lastCommit} |`, "|---|---|---|---|");
     for (const { facts, description } of repos) {
@@ -154,7 +159,7 @@ function body(input) {
   const tree = stackTree(repos.map(({ facts }) => facts), labels);
   if (tree) out.push("### `$ tree stack/`", "", "```text", tree, "```", "");
 
-  const log = repos
+  const log = (input.showProjects ? repos : [])
     .map(({ facts }) => facts)
     .filter((facts) => facts.visibility === "public" && facts.history?.lastCommit)
     .sort((a, b) => b.history.lastCommit.at.localeCompare(a.history.lastCommit.at))

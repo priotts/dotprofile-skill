@@ -98,6 +98,19 @@ export function checkConfig(config, factsFile) {
   };
   check("tagline", config.tagline, [factsFile.profile, ...selected]);
   check("bio", config.bio, [factsFile.profile, ...selected]);
+  if (config.showProjects !== true) {
+    // The repositories are only a source: no text may name one, not even a user-written one.
+    for (const [where, value] of [["tagline", config.tagline], ["bio", config.bio]]) {
+      const text = textOf(value);
+      const named = text ? selected.filter((facts) => new RegExp(`(^|[^\\w-])${escape(facts.name)}(?![\\w-])`, "i").test(text)) : [];
+      if (named.length > 0) {
+        const problems = named.map((facts) => `names ${facts.name}, but projects are hidden (showProjects is not true)`);
+        const existing = findings.find((finding) => finding.where === where);
+        if (existing) existing.problems.push(...problems);
+        else findings.push({ where, text, problems });
+      }
+    }
+  }
   for (const entry of config.repos) {
     if (typeof entry === "string") continue;
     const facts = byName.get(entry.repo.toLowerCase());

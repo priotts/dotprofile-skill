@@ -27,6 +27,7 @@ const config = {
   style: "terminal",
   variant: "solarized",
   language: "en",
+  showProjects: true,
   tagline: { text: "I build small tools that do one thing", by: "user" },
   bio: { text: "I like command-line tools and storage engines. Mostly Go and TypeScript.", by: "user" },
   repos: [

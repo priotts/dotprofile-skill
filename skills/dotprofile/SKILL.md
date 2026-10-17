@@ -56,14 +56,22 @@ node ${CLAUDE_SKILL_DIR}/scripts/extract.mjs list [--user <login>]
 Show the list compactly and propose a selection of 3 to 8 repositories: recently pushed, with a
 description, not forks, not archived. The user decides.
 
-Showing no repository at all is a valid choice: the README then has the header and the "whoami"
-section only, built from the profile and from what the user writes. Use `"repos": []` and skip
-step 3's repository list (run `extract.mjs facts` with `--user <login>` and no repository, to
-read the profile).
+Then ask whether the projects should be **shown** or used **only as a source**
+(`showProjects` in the configuration):
 
-**Private repositories**: the README is public. If the user picks a private repository, tell them
-its name and description will become public (it is shown without a link, and its commit messages
-are never shown). Include it only if they confirm.
+- **shown** (`true`): the README has a table of the projects and their latest commits, and the
+  header lists their names;
+- **only as a source** (`false`, the default): no project is ever named. The repositories feed
+  the bio and the stack tree (languages, frameworks, how many have tests and CI) and nothing else.
+
+**Private repositories**: the README is public. With `showProjects: true`, a private repository's
+name and description become public (it is shown without a link, and its commit messages are never
+shown): include it only if the user confirms. With `showProjects: false`, only totals are
+published, but say that its languages and frameworks count in them.
+
+Choosing no repository at all is also valid: the README then has the header and the "whoami"
+section only, from the profile and what the user writes. Use `"repos": []` and run
+`extract.mjs facts --user <login>` with no repository.
 
 ### 2. Ask what only the user knows
 
@@ -89,8 +97,11 @@ languages, a manifest that could not be parsed means missing dependencies). See
 
 Write, in the chosen language, following [references/writing.md](references/writing.md):
 
-- `description` for each repository: one line, at most about 100 characters;
-- `bio`: two or three sentences, from the user's own words plus the facts across repositories;
+- `description` for each repository, only with `showProjects: true`: one line, at most about
+  100 characters;
+- `bio`: two or three sentences, from the user's own words plus the facts across repositories.
+  With `showProjects: false` it must not name any repository: describe the kinds of projects
+  (from their descriptions and topics), the languages and the frameworks;
 - `tagline`: optional, at most 72 characters, shown in the header under the name.
 
 Each text uses only the facts of its scope: a description uses its repository's facts, the bio
@@ -137,3 +148,4 @@ Add `facts.json` to `.gitignore`. Do not commit or push unless the user asks.
 - Do not edit `README.md` by hand after rendering: change `dotprofile.json` and render again, or
   the next regeneration loses the change.
 - Do not show anything from a private repository beyond what the user approved.
+- With `showProjects: false`, do not name a repository anywhere, the bio and the tagline included.

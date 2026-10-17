@@ -10,6 +10,7 @@ const privateRepo = extractFacts(snapshot({ metadata: { name: "secret", visibili
 const factsFile = { profile: { login: "octocat", name: "The Octocat & co" }, repos: [publicRepo, privateRepo] };
 const config = {
   variant: "gruvbox",
+  showProjects: true,
   tagline: "Links <checked>",
   bio: "I check links.",
   repos: [{ repo: "octocat/linkcheck", description: "Checks links | fast" }, "octocat/secret"],
@@ -59,4 +60,14 @@ test("renders a profile without repositories", () => {
   assert.doesNotMatch(files["README.md"], /ls -l|tree stack|git log/);
   assert.doesNotMatch(files["header-dark.svg"], /0 projects|ls projects/);
   assert.match(files["header-dark.svg"], />Rome</);
+});
+
+test("without showProjects the repositories are only summed up, never named", () => {
+  const files = render({ ...config, showProjects: undefined }, factsFile);
+  for (const content of Object.values(files)) {
+    assert.doesNotMatch(content, /linkcheck|secret|Follow redirects/);
+  }
+  assert.match(files["README.md"], /### `\$ tree stack\/`/);
+  assert.doesNotMatch(files["README.md"], /ls -l projects|git log/);
+  assert.doesNotMatch(files["header-dark.svg"], /ls projects/);
 });

@@ -14,6 +14,10 @@ published, "used in production" on a weekend experiment. dotprofile works the ot
 4. a renderer turns your choices into `README.md` plus an animated SVG header for the light and
    dark themes. Same input, same output.
 
+Your repositories can be **shown** (a table of projects and their latest commits) or used **only
+as a source**: then no project is named, and they only feed the bio and a summary of your
+languages, frameworks and tooling. Handy when most of your work is private.
+
 See [`examples/`](examples/) for a README generated from example facts.
 
 ## Install
