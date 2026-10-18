@@ -149,3 +149,5 @@ Add `facts.json` to `.gitignore`. Do not commit or push unless the user asks.
   the next regeneration loses the change.
 - Do not show anything from a private repository beyond what the user approved.
 - With `showProjects: false`, do not name a repository anywhere, the bio and the tagline included.
+  This is about the user's projects only: the "Generated with dotprofile" line links to this
+  skill, not to a project of theirs, so leave `credit` as the user chose it.
