@@ -7,7 +7,7 @@ The configuration holds the **choices, not the result**. Rendering it again with
 {
   "user": "octocat",
   "style": "terminal",
-  "variant": "solarized",
+  "variant": "github",
   "language": "en",
   "showProjects": true,
   "tagline": { "text": "Backend developer, mostly Go", "by": "user" },
@@ -25,9 +25,9 @@ The configuration holds the **choices, not the result**. Rendering it again with
 |---|---|
 | `user` | GitHub login. |
 | `style` | `terminal` (the only style for now). |
-| `variant` | `solarized` or `gruvbox`. Each has a dark and a light version. |
+| `variant` | `github` (default), `solarized` or `gruvbox`. Each has a dark and a light version. |
 | `language` | Language of the fixed labels: `en` or `it`. Write the texts in the same language. |
-| `showProjects` | `true`: a table of the projects and their latest commits, and their names in the header. `false` (default): the repositories are only a source for the bio and the stack tree, and no project is named. |
+| `showProjects` | `true`: a table of the projects and their latest commits, and their names in the header. `false` (default): the repositories are only a source for the bio and the stack summary, and no project is named. |
 | `tagline` | Optional. One line under the name in the header, at most 72 characters. |
 | `bio` | Optional. The "whoami" section. |
 | `repos` | In display order. An entry is `"owner/name"` or `{ "repo", "description" }`. Without a description, the GitHub description is used, if any. |

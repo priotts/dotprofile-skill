@@ -62,7 +62,7 @@ Then ask whether the projects should be **shown** or used **only as a source**
 - **shown** (`true`): the README has a table of the projects and their latest commits, and the
   header lists their names;
 - **only as a source** (`false`, the default): no project is ever named. The repositories feed
-  the bio and the stack tree (languages, frameworks, how many have tests and CI) and nothing else.
+  the bio and the stack summary (languages, frameworks, how many have tests and CI) and nothing else.
 
 **Private repositories**: the README is public. With `showProjects: true`, a private repository's
 name and description become public (it is shown without a link, and its commit messages are never
@@ -78,7 +78,8 @@ section only, from the profile and what the user writes. Use `"repos": []` and r
 Before writing, ask in one short message (all optional):
 
 - the language of the README (`en` or `it`, the labels exist for these);
-- the style variant: `solarized` or `gruvbox` (both have a dark and a light version);
+- the style variant: `github` (default, matches the GitHub page), `solarized` or `gruvbox`
+  (each has a dark and a light version);
 - anything they want said about themselves: role, focus, what they are looking for.
 
 What they write goes into the configuration as `{ "text": "...", "by": "user" }`.

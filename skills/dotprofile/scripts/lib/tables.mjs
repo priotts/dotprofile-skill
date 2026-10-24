@@ -32,12 +32,14 @@ export const EXCLUDED_DIRECTORIES = new Set(["node_modules", "vendor", "dist", "
 export const FRAMEWORKS = {
   npm: {
     "@angular/core": "Angular", "@builder.io/qwik": "Qwik", "@docusaurus/core": "Docusaurus",
-    "@nestjs/core": "NestJS", "@remix-run/react": "Remix", "@sveltejs/kit": "SvelteKit",
-    "@tauri-apps/api": "Tauri", astro: "Astro", electron: "Electron", "ember-source": "Ember",
-    expo: "Expo", express: "Express", fastify: "Fastify", gatsby: "Gatsby", hono: "Hono",
+    "@nestjs/core": "NestJS", "@prisma/client": "Prisma", "@remix-run/react": "Remix",
+    "@sveltejs/kit": "SvelteKit", "@tauri-apps/api": "Tauri", astro: "Astro",
+    "discord.js": "discord.js", electron: "Electron", "ember-source": "Ember", expo: "Expo",
+    express: "Express", fastify: "Fastify", gatsby: "Gatsby", grammy: "grammY", hono: "Hono",
     jquery: "jQuery", koa: "Koa", lit: "Lit", next: "Next.js", nuxt: "Nuxt", preact: "Preact",
     react: "React", "react-native": "React Native", "solid-js": "Solid", svelte: "Svelte",
-    tailwindcss: "Tailwind CSS", three: "three.js", vitepress: "VitePress", vue: "Vue",
+    tailwindcss: "Tailwind CSS", telegraf: "Telegraf", three: "three.js", typeorm: "TypeORM",
+    vitepress: "VitePress", vue: "Vue",
   },
   pypi: {
     aiohttp: "aiohttp", celery: "Celery", click: "Click", django: "Django", fastapi: "FastAPI",

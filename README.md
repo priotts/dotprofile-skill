@@ -75,7 +75,7 @@ Saved in `dotprofile.json` ([full reference](skills/dotprofile/references/config
 | Option | Values |
 |---|---|
 | `showProjects` | `true`: a table of the projects and their latest commits. `false` (default): no project is named. |
-| `variant` | `solarized` or `gruvbox`, each with a dark and a light version, picked by the viewer's theme |
+| `variant` | `github` (default), `solarized` or `gruvbox`, each with a dark and a light version, picked by the viewer's theme |
 | `language` | `en` or `it`, for the fixed labels |
 | `tagline` | one line under your name in the header |
 | `credit` | `false` removes the "Generated with dotprofile" line |
@@ -109,9 +109,10 @@ The formats are documented in [`references/`](skills/dotprofile/references/).
 
 ## Styles
 
-One style for now, `terminal`: a terminal window with typed commands and a statusline, and
-sections written as shell commands. Variants `solarized` and `gruvbox`, each with a dark and a
-light version.
+One style for now, `terminal`: a terminal window with typed commands (`whoami`, then
+`cat stack.txt` with your languages and frameworks) and a statusline, and sections written as
+shell commands. The stack is also summed up as [shields.io](https://shields.io) badges under the
+bio. Variants `github`, `solarized` and `gruvbox`, each with a dark and a light version.
 
 A style is a module in [`scripts/styles/`](skills/dotprofile/scripts/styles/) exporting a
 `header(input, variant, theme)` and a `body(input)` that return strings. They must be pure
