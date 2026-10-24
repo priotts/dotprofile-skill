@@ -82,6 +82,7 @@ Saved in `dotprofile.json` ([full reference](skills/dotprofile/references/config
 | `tagline` | one line under your name in the header |
 | `stack` | `selected` (default): the stack counts the chosen repositories. `all`: every repository you worked on in the last year (no forks, nothing archived), without naming them. |
 | `tooling` | `false` hides the tests, CI and container counts |
+| `projectCount` | What the header statusline counts: `"all"` (default) every repository of the stack, `"withCode"` only those with code, without the profile repository |
 | `credit` | `false` removes the "Generated with dotprofile" line |
 
 ## What you get

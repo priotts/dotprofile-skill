@@ -105,3 +105,13 @@ test('"tooling": false hides the tests, CI and container counts', () => {
   assert.doesNotMatch(files["header-dark.svg"], /tests \d|CI \d/);
   assert.match(render(config, factsFile)["README.md"], /badge\/tests-/);
 });
+
+test('"projectCount": "withCode" leaves out repositories without code and the profile repository', () => {
+  const empty = extractFacts(snapshot({ metadata: { name: "notes" }, tree: { complete: true, entries: [{ path: "README.md", bytes: 100 }] } }), NOW).facts;
+  const profileRepo = extractFacts(snapshot({ metadata: { name: "octocat" } }), NOW).facts;
+  const facts = { ...factsFile, repos: [...factsFile.repos, empty, profileRepo] };
+  const repos = [...config.repos, "octocat/notes", "octocat/octocat"];
+  assert.match(render({ ...config, repos }, facts)["header-dark.svg"], /4 projects/);
+  assert.match(render({ ...config, repos, projectCount: "withCode" }, facts)["header-dark.svg"], /2 projects/);
+  assert.throws(() => render({ ...config, projectCount: "some" }, factsFile), /projectCount must be/);
+});

@@ -76,6 +76,11 @@ in the last year. With `all`, the other repositories are only counted, never nam
 described, and the bio still describes the selected ones only. Their private repositories count
 too: say so.
 
+Also ask what the "N projects" of the header statusline should count: every repository of the
+stack (`"projectCount": "all"`, the default) or only those with code
+(`"projectCount": "withCode"`: repositories with no detected language, and the
+`<login>/<login>` profile repository, are left out).
+
 Choosing no repository at all is also valid: the README then has the header and the "whoami"
 section only, from the profile and what the user writes. Use `"repos": []` and run
 `extract.mjs facts --user <login>` with no repository.

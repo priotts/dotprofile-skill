@@ -121,7 +121,7 @@ function header(input, variantName, theme) {
   const barY = y + 18;
   const height = barY + 30;
   const status = [
-    allFacts.length > 0 && labels.projects(allFacts.length),
+    projectCount(allFacts, input) > 0 && labels.projects(projectCount(allFacts, input)),
     ...(input.tooling === false ? [] : tooling(allFacts))
       .filter(({ signal }) => signal !== "container")
       .map(({ signal, yes, known }) => `${labels[signal]} ${yes}/${known}`),
@@ -247,6 +247,17 @@ function frameworksOf(allFacts) {
   const counts = new Map();
   for (const name of allFacts.flatMap((facts) => facts.frameworks ?? [])) counts.set(name, (counts.get(name) ?? 0) + 1);
   return [...counts].sort(([a, x], [b, y]) => y - x || a.localeCompare(b)).map(([name]) => name);
+}
+
+/**
+ * How many projects the statusline counts. `"all"` (default): every repository of the summary.
+ * `"withCode"`: only those with code, and never the profile repository itself.
+ */
+function projectCount(allFacts, { projectCount: mode = "all", profile }) {
+  if (mode === "all") return allFacts.length;
+  if (mode !== "withCode") throw new Error(`dotprofile.json: projectCount must be "all" or "withCode", not "${mode}"`);
+  const own = `${profile.login}/${profile.login}`.toLowerCase();
+  return allFacts.filter((facts) => (facts.languages?.length ?? 0) > 0 && facts.fullName.toLowerCase() !== own).length;
 }
 
 /** For each signal some repository has: how many have it, out of those where it is known. */

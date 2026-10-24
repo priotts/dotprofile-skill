@@ -25,6 +25,7 @@ export function render(config, factsFile) {
     labels: labelsFor(config.language),
     showProjects: config.showProjects === true,
     tooling: config.tooling !== false,
+    projectCount: config.projectCount,
     credit: config.credit === false ? undefined : CREDIT_LINK,
   };
   return {
