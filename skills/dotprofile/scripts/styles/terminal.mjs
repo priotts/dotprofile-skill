@@ -7,7 +7,7 @@
  * characters are separate <tspan>s that lay themselves out, and the right side of the
  * statusline is anchored at its end.
  */
-import { escapeXml, combinedLanguages, stackOf, lastCommitDate } from "./shared.mjs";
+import { escapeXml, combinedLanguages, languageColor, stackOf, lastCommitDate } from "./shared.mjs";
 import { countBadge, techBadge } from "./badges.mjs";
 
 export const style = {
@@ -39,7 +39,9 @@ const LINE = 26;
 const GAP = 8;
 const TOP = 40;
 const TYPE_STEP = 0.07;
-const BAR_CELLS = 20;
+const BAR_LINE = 22;
+const BAR_HEIGHT = 10;
+const BAR_GAP = 2;
 /** Languages below this share are noise in a summary (a Dockerfile, one CSS file). */
 const MIN_PERCENT = 1;
 /** Characters that comfortably fit on one line at this size, whatever the monospace font. */
@@ -98,20 +100,22 @@ function header(input, variantName, theme) {
     pause();
   }
 
-  const languages = summaryLanguages(allFacts).slice(0, 3);
+  const languages = summaryLanguages(allFacts).slice(0, 5);
   const frameworks = fitting(frameworksOf(allFacts), " · ");
   if (languages.length > 0 || frameworks.length > 0) {
     typed("cat stack.txt");
-    const width = Math.max(0, ...languages.map(({ language }) => language.length));
-    for (const { language, percent } of languages) {
-      const filled = Math.max(1, Math.round((percent / 100) * BAR_CELLS));
-      output([
-        { text: `${language.padEnd(width)}  `, color: colors.fg },
-        { text: "█".repeat(filled), color: colors.accent },
-        // The track uses the same glyph as the bar, dimmed: ░ is drawn taller than █ in some fonts.
-        { text: "█".repeat(BAR_CELLS - filled), color: colors.dim, opacity: 0.3 },
-        { text: `  ${percent.toFixed(1).padStart(5)}%`, color: colors.fg },
-      ]);
+    if (languages.length > 0) {
+      // One bar split by language, as on GitHub. Drawn as shapes, so no glyph decides its look.
+      lines.push({ kind: "bar", languages, at: clock, y });
+      y += BAR_LINE;
+      const legend = languages.map(({ language, percent }) => `● ${language} ${percent.toFixed(1)}%`);
+      output(
+        languages.slice(0, fitting(legend, "   ").length).flatMap(({ language, percent }, i) => [
+          { text: `${i > 0 ? "   " : ""}● `, color: languageColor(language, colors) },
+          { text: `${language} `, color: colors.fg },
+          { text: `${percent.toFixed(1)}%`, color: colors.dim },
+        ]),
+      );
     }
     if (frameworks.length > 0) output([{ text: frameworks.join(" · "), color: colors.dim }]);
     pause();
@@ -132,10 +136,23 @@ function header(input, variantName, theme) {
   const label = [name, tagline].filter(Boolean).join(", ");
 
   const rows = lines.map((line) => {
+    if (line.kind === "bar") {
+      const width = WIDTH - 48;
+      let x = 24;
+      const segments = line.languages.map(({ language, percent }, i) => {
+        const w = (width * percent) / 100;
+        const gap = i < line.languages.length - 1 ? BAR_GAP : 0;
+        const rect = `<rect x="${fmt(x)}" y="${line.y - 12}" width="${fmt(Math.max(w - gap, 1))}" height="${BAR_HEIGHT}" fill="${languageColor(language, colors)}"/>`;
+        x += w;
+        return rect;
+      });
+      const shape = `x="24" y="${line.y - 12}" width="${width}" height="${BAR_HEIGHT}" rx="${BAR_HEIGHT / 2}"`;
+      return `<g opacity="0"><clipPath id="stack-bar"><rect ${shape}/></clipPath><rect ${shape} fill="${colors.bar}"/><g clip-path="url(#stack-bar)">${segments.join("")}</g>${appear(line.at)}</g>`;
+    }
     if (line.kind === "output") {
       const spans = line.spans
         .filter(({ text }) => text !== "")
-        .map(({ text, color, weight, opacity }) => `<tspan fill="${color}"${weight ? ` font-weight="${weight}"` : ""}${opacity ? ` fill-opacity="${opacity}"` : ""}>${escapeXml(text)}</tspan>`)
+        .map(({ text, color, weight }) => `<tspan fill="${color}"${weight ? ` font-weight="${weight}"` : ""}>${escapeXml(text)}</tspan>`)
         .join("");
       return `<text x="24" y="${line.y}" xml:space="preserve" opacity="0">${spans}${appear(line.at)}</text>`;
     }

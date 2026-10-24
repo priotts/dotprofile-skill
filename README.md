@@ -114,7 +114,7 @@ The formats are documented in [`references/`](skills/dotprofile/references/).
 ## Styles
 
 One style for now, `terminal`: a terminal window with typed commands (`whoami`, then
-`cat stack.txt` with your languages and frameworks) and a statusline, and sections written as
+`cat stack.txt` with a GitHub-style language bar and your frameworks) and a statusline, and sections written as
 shell commands. The stack is also summed up as [shields.io](https://shields.io) badges under the
 bio. Variants `github`, `solarized` and `gruvbox`, each with a dark and a light version.
 

@@ -27,3 +27,18 @@ export function stackOf(facts) {
 export function lastCommitDate(facts) {
   return facts.history?.lastCommitAt.slice(0, 10);
 }
+
+/** GitHub's own language colors (linguist), so the stack bar reads like a repository's. */
+const LANGUAGE_COLORS = {
+  Astro: "#ff5a03", C: "#555555", "C#": "#178600", "C++": "#f34b7d", CSS: "#663399", Clojure: "#db5855",
+  Dart: "#00b4ab", Dockerfile: "#384d54", Elixir: "#6e4a7e", Erlang: "#b83998", "F#": "#b845fc",
+  Go: "#00add8", Groovy: "#4298b8", HCL: "#844fba", HTML: "#e34c26", Haskell: "#5e5086", Java: "#b07219",
+  JavaScript: "#f1e05a", Julia: "#a270ba", Kotlin: "#a97bff", Less: "#1d365d", Lua: "#000080",
+  Makefile: "#427819", Nim: "#ffc200", Nix: "#7e7eff", OCaml: "#ef7a08", PHP: "#4f5d95", Perl: "#0298c3",
+  PowerShell: "#012456", Python: "#3572a5", Ruby: "#701516", Rust: "#dea584", SCSS: "#c6538c",
+  Sass: "#a53b70", Scala: "#c22d40", Shell: "#89e051", Svelte: "#ff3e00", Swift: "#f05138",
+  TypeScript: "#3178c6", Vue: "#41b883", Zig: "#ec915c",
+};
+
+/** A language's color, or the theme's accent for one GitHub has none for. */
+export const languageColor = (language, colors) => LANGUAGE_COLORS[language] ?? colors.accent;

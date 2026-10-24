@@ -75,7 +75,8 @@ test("without showProjects the repositories are only summed up, never named", ()
 test("sums the stack up in the header and as badges, leaving out tiny languages", () => {
   const tiny = extractFacts(snapshot({ metadata: { name: "tiny" }, tree: { complete: true, entries: [{ path: "main.ts", bytes: 99000 }, { path: "Dockerfile", bytes: 100 }] } }), NOW).facts;
   const files = render({ repos: ["octocat/tiny"] }, { profile: { login: "octocat" }, repos: [tiny] });
-  assert.match(files["header-dark.svg"], /TypeScript {2}<\/tspan>/);
+  assert.match(files["header-dark.svg"], /<rect x="24" y="\d+" width="[\d.]+" height="10" fill="#3178c6"\/>/);
+  assert.match(files["header-dark.svg"], />TypeScript <\/tspan><tspan fill="[^"]+">99\.9%</);
   assert.doesNotMatch(files["header-dark.svg"], /Dockerfile/);
   assert.match(files["README.md"], /!\[TypeScript\]\(https:\/\/img\.shields\.io\/badge\/TypeScript-3178c6\?style=flat-square&logo=typescript/);
   assert.doesNotMatch(files["README.md"], /badge\/Dockerfile/);
@@ -88,7 +89,10 @@ test('with "stack": "all", active unselected repositories count in the stack but
   const active = angular("zz-dashboard");
   const fork = angular("zz-forked", { fork: true });
   const stale = { ...angular("zz-old"), derived: { ...active.derived, daysSinceLastCommit: 900 } };
-  const factsFile = { profile: { login: "octocat" }, repos: [selected, active, fork, stale] };
+  // The profile repository and repositories without code never count.
+  const profileRepo = angular("octocat");
+  const empty = extractFacts(snapshot({ metadata: { name: "zz-notes" }, tree: { complete: true, entries: [] } }), NOW).facts;
+  const factsFile = { profile: { login: "octocat" }, repos: [selected, active, fork, stale, profileRepo, empty] };
   const base = { repos: ["octocat/linkcheck"], bio: "I check links." };
 
   assert.doesNotMatch(render(base, factsFile)["README.md"], /Angular/);
