@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createClient, linkPages, readSnapshot, resolveToken } from "../skills/dotprofile/scripts/lib/github.mjs";
+import { activeRepositories, createClient, linkPages, readSnapshot, resolveToken } from "../skills/dotprofile/scripts/lib/github.mjs";
 
 /** A fetch that answers from a table of paths, and records every request. */
 function fakeGitHub(routes) {
@@ -67,4 +67,16 @@ test("parses Link headers", () => {
 test("takes the token from the environment first", () => {
   assert.equal(resolveToken({ GH_TOKEN: " abc " }), "abc");
   assert.equal(resolveToken({ GITHUB_TOKEN: "def" }), "def");
+});
+
+test("active repositories: recently pushed, not forks, not archived, not excluded", () => {
+  const list = [
+    { fullName: "octocat/new", pushedAt: "2026-09-01T00:00:00Z" },
+    { fullName: "octocat/old", pushedAt: "2025-09-01T00:00:00Z" },
+    { fullName: "octocat/fork", pushedAt: "2026-09-01T00:00:00Z", fork: true },
+    { fullName: "octocat/archived", pushedAt: "2026-09-01T00:00:00Z", archived: true },
+    { fullName: "octocat/Selected", pushedAt: "2026-09-01T00:00:00Z" },
+    { fullName: "octocat/empty" },
+  ];
+  assert.deepEqual(activeRepositories(list, 12, new Date("2026-10-17T00:00:00Z"), ["octocat/selected"]), ["octocat/new"]);
 });

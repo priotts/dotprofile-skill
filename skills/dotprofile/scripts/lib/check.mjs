@@ -1,5 +1,5 @@
 import { EXTENSIONS, FILE_NAMES, FRAMEWORKS } from "./tables.mjs";
-import { isUserWritten, textOf } from "./config.mjs";
+import { activeRepos, isUserWritten, textOf } from "./config.mjs";
 
 /**
  * Looks for statements in the generated texts that the facts do not support. It is a safety
@@ -98,13 +98,17 @@ export function checkConfig(config, factsFile) {
   };
   check("tagline", config.tagline, [factsFile.profile, ...selected]);
   check("bio", config.bio, [factsFile.profile, ...selected]);
-  if (config.showProjects !== true) {
+  // The active repositories only feed the stack: they are never named, whatever showProjects says.
+  const unnamed = [...(config.showProjects === true ? [] : selected), ...activeRepos(config, factsFile)];
+  if (unnamed.length > 0) {
     // The repositories are only a source: no text may name one, not even a user-written one.
     for (const [where, value] of [["tagline", config.tagline], ["bio", config.bio]]) {
       const text = textOf(value);
-      const named = text ? selected.filter((facts) => new RegExp(`(^|[^\\w-])${escape(facts.name)}(?![\\w-])`, "i").test(text)) : [];
+      const named = text ? unnamed.filter((facts) => new RegExp(`(^|[^\\w-])${escape(facts.name)}(?![\\w-])`, "i").test(text)) : [];
       if (named.length > 0) {
-        const problems = named.map((facts) => `names ${facts.name}, but projects are hidden (showProjects is not true)`);
+        const problems = named.map((facts) =>
+          selected.includes(facts) ? `names ${facts.name}, but projects are hidden (showProjects is not true)` : `names ${facts.name}, which only feeds the stack summary`,
+        );
         const existing = findings.find((finding) => finding.where === where);
         if (existing) existing.problems.push(...problems);
         else findings.push({ where, text, problems });

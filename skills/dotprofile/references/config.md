@@ -17,6 +17,7 @@ The configuration holds the **choices, not the result**. Rendering it again with
     { "repo": "octocat/notes", "description": { "text": "My notes on distributed systems", "by": "user" } },
     "octocat/dotfiles"
   ],
+  "stack": { "activeMonths": 12, "minRepos": 1, "counts": true },
   "credit": true
 }
 ```
@@ -31,6 +32,7 @@ The configuration holds the **choices, not the result**. Rendering it again with
 | `tagline` | Optional. One line under the name in the header, at most 72 characters. |
 | `bio` | Optional. The "whoami" section. |
 | `repos` | In display order. An entry is `"owner/name"` or `{ "repo", "description" }`. Without a description, the GitHub description is used, if any. |
+| `stack` | Optional: what the stack summary (languages, frameworks, badges) is computed from. `activeMonths`: also count the user's other repositories pushed in the last that many months, not forks and not archived. They are never named and never feed the texts; extract them with `--stack-months` and the same number. `minRepos` (default `1`): show a framework only when at least that many repositories use it. `counts: false` removes the tests, CI and container counts. |
 | `credit` | `false` removes the small "Generated with dotprofile" line, which links to this skill's repository. Default `true`. It is independent of `showProjects`: ask the user, never remove it on your own. |
 
 ## Texts

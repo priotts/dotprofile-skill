@@ -69,6 +69,13 @@ name and description become public (it is shown without a link, and its commit m
 shown): include it only if the user confirms. With `showProjects: false`, only totals are
 published, but say that its languages and frameworks count in them.
 
+The selected repositories may be few, while the stack is wider. Offer the **active stack**
+(`stack.activeMonths`, default suggestion 12): languages, frameworks and badges then also count
+every other repository pushed in that window, not forks and not archived, so a framework used
+only in an abandoned repository does not show. These repositories are never named and never feed
+the texts. With `stack.minRepos: 2` a framework needs two repositories; `stack.counts: false`
+drops the tests, CI and container counts.
+
 Choosing no repository at all is also valid: the README then has the header and the "whoami"
 section only, from the profile and what the user writes. Use `"repos": []` and run
 `extract.mjs facts --user <login>` with no repository.
@@ -87,8 +94,10 @@ What they write goes into the configuration as `{ "text": "...", "by": "user" }`
 ### 3. Extract the facts
 
 ```sh
-node ${CLAUDE_SKILL_DIR}/scripts/extract.mjs facts <owner/repo>... [--user <login>] --out facts.json
+node ${CLAUDE_SKILL_DIR}/scripts/extract.mjs facts <owner/repo>... [--user <login>] [--stack-months <n>] --out facts.json
 ```
+
+Pass `--stack-months` with the `stack.activeMonths` of the configuration, if it has one.
 
 Read the warnings it prints and mention the ones that matter (a truncated tree means unknown
 languages, a manifest that could not be parsed means missing dependencies). See

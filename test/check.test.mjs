@@ -38,3 +38,11 @@ test("with hidden projects, no text may name a repository", () => {
   assert.match(checkConfig(config, factsFile)[0].problems[0], /names linkcheck/);
   assert.deepEqual(checkConfig({ ...config, showProjects: true }, factsFile), []);
 });
+
+test("texts may not name a repository that only feeds the stack", () => {
+  const other = extractFacts(snapshot({ metadata: { name: "hidden-tool" } }), NOW).facts;
+  const config = { showProjects: true, repos: ["octocat/linkcheck"], bio: { text: "I wrote hidden-tool.", by: "user" }, stack: { activeMonths: 6 } };
+  const findings = checkConfig(config, { profile: { login: "octocat" }, repos: [facts], stack: { months: 6 }, stackRepos: [other] });
+  assert.equal(findings.length, 1);
+  assert.match(findings[0].problems[0], /hidden-tool, which only feeds the stack summary/);
+});

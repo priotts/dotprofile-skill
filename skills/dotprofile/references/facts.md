@@ -11,6 +11,10 @@
 }
 ```
 
+With `--stack-months <n>` it also has `"stack": { "months": n }` and `stackRepos`: the facts of the
+user's other repositories pushed in the last `n` months, not forks and not archived (the selected
+ones and `<login>/<login>` excluded). Same fields as `repos`; they only feed the stack summary.
+
 **Optional fields are absent when the data is unknown.** Never `null`, never estimated, never a
 default. Lists are absent rather than empty. An absent field means "nobody knows", so no sentence
 may be written about it.

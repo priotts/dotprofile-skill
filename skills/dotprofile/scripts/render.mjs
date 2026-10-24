@@ -24,6 +24,8 @@ export function render(config, factsFile) {
     ...resolve(config, factsFile),
     labels: labelsFor(config.language),
     showProjects: config.showProjects === true,
+    minRepos: config.stack?.minRepos ?? 1,
+    counts: config.stack?.counts !== false,
     credit: config.credit === false ? undefined : CREDIT_LINK,
   };
   return {

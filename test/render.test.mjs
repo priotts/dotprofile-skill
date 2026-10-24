@@ -80,3 +80,27 @@ test("sums the stack up in the header and as badges, leaving out tiny languages"
   assert.match(files["README.md"], /!\[TypeScript\]\(https:\/\/img\.shields\.io\/badge\/TypeScript-3178c6\?style=flat-square&logo=typescript/);
   assert.doesNotMatch(files["README.md"], /badge\/Dockerfile/);
 });
+
+test("with stack.activeMonths the active repositories feed the stack, unnamed", () => {
+  const angular = { "package.json": JSON.stringify({ dependencies: { "@angular/core": "^20" } }) };
+  const dashboard = extractFacts(snapshot({ metadata: { name: "dashboard" }, files: new Map(Object.entries(angular)) }), NOW).facts;
+  const stackConfig = { ...config, showProjects: true, stack: { activeMonths: 12 } };
+  const files = render(stackConfig, { ...factsFile, stack: { months: 12 }, stackRepos: [dashboard] });
+  assert.match(files["README.md"], /badge\/Angular-dd0031/);
+  assert.match(files["header-dark.svg"], /Angular/);
+  for (const content of Object.values(files)) assert.doesNotMatch(content, /dashboard/);
+  // The counts and the project count stay on the selected repositories.
+  assert.match(files["README.md"], /tests-2%2F2%20repos/);
+
+  assert.throws(() => render(stackConfig, factsFile), /extract with --stack-months 12/);
+  const strict = render({ ...stackConfig, stack: { activeMonths: 12, minRepos: 2 } }, { ...factsFile, stack: { months: 12 }, stackRepos: [dashboard] });
+  assert.doesNotMatch(strict["README.md"], /badge\/Angular/);
+  assert.match(strict["README.md"], /badge\/React/);
+});
+
+test("stack.counts false leaves out the tests, CI and container counts", () => {
+  const files = render({ ...config, stack: { counts: false } }, factsFile);
+  assert.doesNotMatch(files["README.md"], /badge\/(tests|CI|container)-/);
+  assert.doesNotMatch(files["header-dark.svg"], /tests \d|CI \d/);
+  assert.match(files["README.md"], /badge\/TypeScript-3178c6/);
+});

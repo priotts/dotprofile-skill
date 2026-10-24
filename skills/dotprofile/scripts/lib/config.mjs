@@ -29,5 +29,25 @@ export function resolve(config, factsFile) {
     if (!facts) throw new Error(`dotprofile.json lists ${key}, which is not in the facts: extract it first`);
     return { facts, description: textOf(entry.description) ?? facts.description, entry };
   });
-  return { profile: factsFile.profile, repos, bio: textOf(config.bio), tagline: textOf(config.tagline) };
+  return {
+    profile: factsFile.profile,
+    repos,
+    stackFacts: [...repos.map(({ facts }) => facts), ...activeRepos(config, factsFile)],
+    bio: textOf(config.bio),
+    tagline: textOf(config.tagline),
+  };
+}
+
+/**
+ * With `stack.activeMonths`, the stack summary also counts the other active repositories, read by
+ * `extract.mjs facts --stack-months` with the same number of months. They are never named.
+ */
+export function activeRepos(config, factsFile) {
+  const months = config.stack?.activeMonths;
+  if (months === undefined) return [];
+  if (!Number.isInteger(months) || months < 1) throw new Error("dotprofile.json: stack.activeMonths must be a whole number of months");
+  if (factsFile.stack?.months !== months) {
+    throw new Error(`dotprofile.json asks for the repositories active in the last ${months} months: extract with --stack-months ${months}`);
+  }
+  return factsFile.stackRepos ?? [];
 }

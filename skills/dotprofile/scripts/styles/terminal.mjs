@@ -59,6 +59,7 @@ function header(input, variantName, theme) {
     throw new Error(`The tagline has ${[...tagline].length} characters: the terminal header fits ${MAX_LINE_CHARS}`);
   }
   const allFacts = repos.map(({ facts }) => facts);
+  const stackFacts = input.stackFacts ?? allFacts;
   const name = profile.name ?? profile.login;
 
   let clock = 0.4;
@@ -96,8 +97,8 @@ function header(input, variantName, theme) {
     pause();
   }
 
-  const languages = summaryLanguages(allFacts).slice(0, 3);
-  const frameworks = fitting(frameworksOf(allFacts), " · ");
+  const languages = summaryLanguages(stackFacts).slice(0, 3);
+  const frameworks = fitting(frameworksOf(stackFacts, input.minRepos), " · ");
   if (languages.length > 0 || frameworks.length > 0) {
     typed("cat stack.txt");
     const width = Math.max(0, ...languages.map(({ language }) => language.length));
@@ -119,7 +120,7 @@ function header(input, variantName, theme) {
   const height = barY + 30;
   const status = [
     repos.length > 0 && labels.projects(repos.length),
-    ...tooling(allFacts)
+    ...(input.counts === false ? [] : tooling(allFacts))
       .filter(({ signal }) => signal !== "container")
       .map(({ signal, yes, known }) => `${labels[signal]} ${yes}/${known}`),
     profile.location,
@@ -185,6 +186,7 @@ const fmt = (seconds) => (Math.round(seconds * 100) / 100).toString();
 function body(input) {
   const { profile, repos, bio, labels } = input;
   const allFacts = repos.map(({ facts }) => facts);
+  const stackFacts = input.stackFacts ?? allFacts;
   const out = [];
   const alt = escapeXml(profile.name ?? profile.login);
   out.push(
@@ -202,11 +204,11 @@ function body(input) {
   ].filter(Boolean);
 
   const technologies = [
-    ...summaryLanguages(allFacts).map(({ language }) => language),
-    ...frameworksOf(allFacts),
-    ...(allFacts.some((facts) => facts.signals.container) ? ["Docker"] : []),
+    ...summaryLanguages(stackFacts).map(({ language }) => language),
+    ...frameworksOf(stackFacts, input.minRepos),
+    ...(stackFacts.some((facts) => facts.signals.container) ? ["Docker"] : []),
   ];
-  const counts = tooling(allFacts).map(({ signal, yes, known }) => countBadge(labels[signal], labels.inRepos(yes, known), yes / known));
+  const counts = (input.counts === false ? [] : tooling(allFacts)).map(({ signal, yes, known }) => countBadge(labels[signal], labels.inRepos(yes, known), yes / known));
   const badges = [technologies.map(techBadge).join(" "), counts.join(" ")].filter(Boolean).join("<br>\n");
 
   const about = [bio, links.join(" · "), badges].filter(Boolean);
@@ -238,11 +240,14 @@ function body(input) {
 /** Combined languages worth showing: at least MIN_PERCENT of the code. */
 const summaryLanguages = (allFacts) => combinedLanguages(allFacts).filter(({ percent }) => percent >= MIN_PERCENT);
 
-/** Frameworks of all the repositories, the most used first. */
-function frameworksOf(allFacts) {
+/** Frameworks used by at least `minRepos` of the repositories, the most used first. */
+function frameworksOf(allFacts, minRepos = 1) {
   const counts = new Map();
   for (const name of allFacts.flatMap((facts) => facts.frameworks ?? [])) counts.set(name, (counts.get(name) ?? 0) + 1);
-  return [...counts].sort(([a, x], [b, y]) => y - x || a.localeCompare(b)).map(([name]) => name);
+  return [...counts]
+    .filter(([, count]) => count >= minRepos)
+    .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
+    .map(([name]) => name);
 }
 
 /** For each signal some repository has: how many have it, out of those where it is known. */

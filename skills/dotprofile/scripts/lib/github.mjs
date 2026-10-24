@@ -122,6 +122,20 @@ export async function listRepositories(client, login) {
   }));
 }
 
+/**
+ * From a `listRepositories` result: the ones pushed in the last `months` months, not forks, not
+ * archived and not in `exclude` (owner/name, any case). Pure: `now` is the only notion of time.
+ */
+export function activeRepositories(list, months, now, exclude = []) {
+  const since = new Date(now);
+  since.setUTCMonth(since.getUTCMonth() - months);
+  const excluded = new Set(exclude.map((name) => name.toLowerCase()));
+  return list
+    .filter((repo) => !repo.fork && !repo.archived && repo.pushedAt && new Date(repo.pushedAt) >= since)
+    .filter((repo) => !excluded.has(repo.fullName.toLowerCase()))
+    .map((repo) => repo.fullName);
+}
+
 function visibility(repo) {
   if (["public", "private", "internal"].includes(repo.visibility)) return repo.visibility;
   return repo.private ? "private" : "public";
