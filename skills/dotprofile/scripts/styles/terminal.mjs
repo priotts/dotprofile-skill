@@ -8,6 +8,7 @@
  * statusline is anchored at its end.
  */
 import { escapeXml, combinedLanguages, stackOf, lastCommitDate } from "./shared.mjs";
+import { countBadge, techBadge } from "./badges.mjs";
 
 export const style = {
   name: "terminal",
@@ -15,6 +16,10 @@ export const style = {
   text: "live",
   /** Real terminal themes, each with its dark and light version. */
   variants: {
+    github: {
+      dark: { bg: "#151b23", fg: "#d1d7e0", dim: "#9198a1", accent: "#4493f8", prompt: "#3fb950", strong: "#d29922", bar: "#212830", border: "#3d444d" },
+      light: { bg: "#f6f8fa", fg: "#1f2328", dim: "#59636e", accent: "#0969da", prompt: "#1a7f37", strong: "#9a6700", bar: "#eaeef2", border: "#d1d9e0" },
+    },
     solarized: {
       dark: { bg: "#002b36", fg: "#93a1a1", dim: "#586e75", accent: "#268bd2", prompt: "#859900", strong: "#b58900", bar: "#073642", border: "#0b4552" },
       light: { bg: "#fdf6e3", fg: "#586e75", dim: "#93a1a1", accent: "#268bd2", prompt: "#859900", strong: "#b58900", bar: "#eee8d5", border: "#e4dcc4" },
@@ -29,10 +34,14 @@ export const style = {
 };
 
 const FONT = `ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace`;
-const WIDTH = 800;
+const WIDTH = 880;
 const LINE = 26;
+const GAP = 8;
 const TOP = 40;
 const TYPE_STEP = 0.07;
+const BAR_CELLS = 20;
+/** Languages below this share are noise in a summary (a Dockerfile, one CSS file). */
+const MIN_PERCENT = 1;
 /** Characters that comfortably fit on one line at this size, whatever the monospace font. */
 export const MAX_LINE_CHARS = 72;
 
@@ -49,56 +58,91 @@ function header(input, variantName, theme) {
   if (tagline && [...tagline].length > MAX_LINE_CHARS) {
     throw new Error(`The tagline has ${[...tagline].length} characters: the terminal header fits ${MAX_LINE_CHARS}`);
   }
-
-  const names = [];
-  let used = 0;
-  for (const { facts } of input.showProjects ? repos : []) {
-    if (used + facts.name.length + 2 > MAX_LINE_CHARS) break;
-    names.push(facts.name);
-    used += facts.name.length + 2;
-  }
+  const allFacts = repos.map(({ facts }) => facts);
+  const name = profile.name ?? profile.login;
 
   let clock = 0.4;
+  let y = TOP;
   const lines = [];
   const typed = (command) => {
     const start = clock;
     clock += command.length * TYPE_STEP + 0.3;
-    return { kind: "typed", command, start, end: clock };
+    lines.push({ kind: "typed", command, start, y });
+    y += LINE;
   };
-  const output = (text, color, weight) => ({ kind: "output", text, color, weight, at: clock });
-
-  lines.push(typed("whoami"));
-  lines.push(output(profile.name ?? profile.login, colors.strong, "bold"));
-  if (tagline) lines.push(output(tagline, colors.fg));
-  clock += 0.5;
-  if (names.length > 0) {
-    lines.push(typed("ls projects/"));
-    lines.push(output(names.join("  "), colors.accent));
+  const output = (spans) => {
+    lines.push({ kind: "output", spans, at: clock, y });
+    y += LINE;
+  };
+  const pause = () => {
     clock += 0.5;
-  }
-  lines.push({ kind: "cursor", at: clock });
+    y += GAP;
+  };
 
-  const barY = TOP + lines.length * LINE + 6;
+  typed("whoami");
+  const nameSpan = { text: name, color: colors.strong, weight: "bold" };
+  if (tagline && [...`${name} · ${tagline}`].length <= MAX_LINE_CHARS) {
+    output([nameSpan, { text: ` · ${tagline}`, color: colors.fg }]);
+  } else {
+    output([nameSpan]);
+    if (tagline) output([{ text: tagline, color: colors.fg }]);
+  }
+  pause();
+
+  const names = fitting(input.showProjects ? allFacts.map((facts) => facts.name) : [], "  ");
+  if (names.length > 0) {
+    typed("ls projects/");
+    output([{ text: names.join("  "), color: colors.accent }]);
+    pause();
+  }
+
+  const languages = summaryLanguages(allFacts).slice(0, 3);
+  const frameworks = fitting(frameworksOf(allFacts), " · ");
+  if (languages.length > 0 || frameworks.length > 0) {
+    typed("cat stack.txt");
+    const width = Math.max(0, ...languages.map(({ language }) => language.length));
+    for (const { language, percent } of languages) {
+      const filled = Math.max(1, Math.round((percent / 100) * BAR_CELLS));
+      output([
+        { text: `${language.padEnd(width)}  `, color: colors.fg },
+        { text: "█".repeat(filled), color: colors.accent },
+        { text: "░".repeat(BAR_CELLS - filled), color: colors.dim },
+        { text: `  ${percent.toFixed(1).padStart(5)}%`, color: colors.fg },
+      ]);
+    }
+    if (frameworks.length > 0) output([{ text: frameworks.join(" · "), color: colors.dim }]);
+    pause();
+  }
+  lines.push({ kind: "cursor", at: clock, y });
+
+  const barY = y + 18;
   const height = barY + 30;
-  const top = combinedLanguages(repos.map(({ facts }) => facts))[0];
-  const status = [repos.length > 0 && labels.projects(repos.length), top && `${top.language} ${top.percent}%`, profile.location]
+  const status = [
+    repos.length > 0 && labels.projects(repos.length),
+    ...tooling(allFacts)
+      .filter(({ signal }) => signal !== "container")
+      .map(({ signal, yes, known }) => `${labels[signal]} ${yes}/${known}`),
+    profile.location,
+  ]
     .filter(Boolean)
     .join(" · ");
-  const label = [profile.name ?? profile.login, tagline].filter(Boolean).join(", ");
+  const label = [name, tagline].filter(Boolean).join(", ");
 
-  const rows = lines.map((line, index) => {
-    const y = TOP + index * LINE;
+  const rows = lines.map((line) => {
     if (line.kind === "output") {
-      return `<text x="24" y="${y}" xml:space="preserve" fill="${line.color}"${line.weight ? ` font-weight="${line.weight}"` : ""} opacity="0">${escapeXml(line.text)}${appear(line.at)}</text>`;
+      const spans = line.spans
+        .map(({ text, color, weight }) => `<tspan fill="${color}"${weight ? ` font-weight="${weight}"` : ""}>${escapeXml(text)}</tspan>`)
+        .join("");
+      return `<text x="24" y="${line.y}" xml:space="preserve" opacity="0">${spans}${appear(line.at)}</text>`;
     }
     const promptSpan = `<tspan fill="${colors.prompt}">${escapeXml(prompt)}</tspan>`;
     if (line.kind === "cursor") {
-      return `<text x="24" y="${y}" opacity="0">${promptSpan}<tspan fill="${colors.fg}">█<animate attributeName="opacity" values="1;0;1" dur="1s" begin="${fmt(line.at)}s" repeatCount="4" fill="freeze"/></tspan>${appear(line.at)}</text>`;
+      return `<text x="24" y="${line.y}" opacity="0">${promptSpan}<tspan fill="${colors.fg}">█<animate attributeName="opacity" values="1;0;1" dur="1s" begin="${fmt(line.at)}s" repeatCount="4" fill="freeze"/></tspan>${appear(line.at)}</text>`;
     }
     const chars = [...line.command]
       .map((char, i) => `<tspan opacity="0">${escapeXml(char)}${appear(line.start + i * TYPE_STEP)}</tspan>`)
       .join("");
-    return `<text x="24" y="${y}" fill="${colors.fg}" opacity="0">${promptSpan}${chars}${appear(Math.max(0, line.start - 0.3))}</text>`;
+    return `<text x="24" y="${line.y}" fill="${colors.fg}" opacity="0">${promptSpan}${chars}${appear(Math.max(0, line.start - 0.3))}</text>`;
   });
 
   return [
@@ -116,6 +160,19 @@ function header(input, variantName, theme) {
   ].join("\n");
 }
 
+/** The first items that fit on one header line, joined by `separator`. */
+function fitting(items, separator) {
+  const out = [];
+  let used = 0;
+  for (const item of items) {
+    const extra = item.length + (out.length > 0 ? separator.length : 0);
+    if (used + extra > MAX_LINE_CHARS) break;
+    out.push(item);
+    used += extra;
+  }
+  return out;
+}
+
 /** Makes an element visible at `seconds`, once. */
 const appear = (seconds) => `<set attributeName="opacity" to="1" begin="${fmt(seconds)}s" fill="freeze"/>`;
 const fmt = (seconds) => (Math.round(seconds * 100) / 100).toString();
@@ -123,10 +180,11 @@ const fmt = (seconds) => (Math.round(seconds * 100) / 100).toString();
 /**
  * input: { profile, repos: [{ facts, description? }], bio?, labels, credit, showProjects } →
  * Markdown. The project table and the git log name the projects, so they need `showProjects`;
- * the stack tree only sums the repositories up.
+ * the badges only sum the repositories up.
  */
 function body(input) {
   const { profile, repos, bio, labels } = input;
+  const allFacts = repos.map(({ facts }) => facts);
   const out = [];
   const alt = escapeXml(profile.name ?? profile.login);
   out.push(
@@ -137,12 +195,21 @@ function body(input) {
     "",
   );
 
-  const about = [
-    bio,
-    [profile.location, profile.blog && `[${profile.blog.replace(/^https?:\/\//, "").replace(/\/$/, "")}](${absolute(profile.blog)})`]
-      .filter(Boolean)
-      .join(" · "),
+  const links = [
+    profile.location && `📍 ${profile.location}`,
+    profile.blog && `[${profile.blog.replace(/^https?:\/\//, "").replace(/\/$/, "")}](${absolute(profile.blog)})`,
+    profile.twitter && `[𝕏 @${profile.twitter}](https://x.com/${profile.twitter})`,
   ].filter(Boolean);
+
+  const technologies = [
+    ...summaryLanguages(allFacts).map(({ language }) => language),
+    ...frameworksOf(allFacts),
+    ...(allFacts.some((facts) => facts.signals.container) ? ["Docker"] : []),
+  ];
+  const counts = tooling(allFacts).map(({ signal, yes, known }) => countBadge(labels[signal], labels.inRepos(yes, known), yes / known));
+  const badges = [technologies.map(techBadge).join(" "), counts.join(" ")].filter(Boolean).join("<br>\n");
+
+  const about = [bio, links.join(" · "), badges].filter(Boolean);
   if (about.length > 0) out.push("### `$ whoami`", "", about.join("\n\n"), "");
 
   if (input.showProjects && repos.length > 0) {
@@ -156,9 +223,6 @@ function body(input) {
     out.push("");
   }
 
-  const tree = stackTree(repos.map(({ facts }) => facts), labels);
-  if (tree) out.push("### `$ tree stack/`", "", "```text", tree, "```", "");
-
   const log = (input.showProjects ? repos : [])
     .map(({ facts }) => facts)
     .filter((facts) => facts.visibility === "public" && facts.history?.lastCommit)
@@ -171,37 +235,23 @@ function body(input) {
   return out.join("\n");
 }
 
-function stackTree(allFacts, labels) {
-  const languages = combinedLanguages(allFacts).slice(0, 6);
-  const frameworks = [...new Set(allFacts.flatMap((facts) => facts.frameworks ?? []))].sort((a, b) => a.localeCompare(b));
-  const known = (signal) => allFacts.filter((facts) => facts.signals[signal] !== undefined);
-  const tooling = ["tests", "ci", "container"].flatMap((signal) => {
-    const counted = known(signal);
-    const yes = counted.filter((facts) => facts.signals[signal]).length;
-    return yes > 0 ? [`${labels[signal]}: ${labels.outOf(yes, counted.length)}`] : [];
-  });
+/** Combined languages worth showing: at least MIN_PERCENT of the code. */
+const summaryLanguages = (allFacts) => combinedLanguages(allFacts).filter(({ percent }) => percent >= MIN_PERCENT);
 
-  const groups = [
-    languages.length > 0 && { name: labels.languages, items: alignPercents(languages) },
-    frameworks.length > 0 && { name: labels.frameworks, items: frameworks },
-    tooling.length > 0 && { name: labels.tooling, items: tooling },
-  ].filter(Boolean);
-  if (groups.length === 0) return undefined;
-
-  const lines = ["stack/"];
-  groups.forEach((group, g) => {
-    const lastGroup = g === groups.length - 1;
-    lines.push(`${lastGroup ? "└── " : "├── "}${group.name}/`);
-    group.items.forEach((item, i) => {
-      lines.push(`${lastGroup ? "    " : "│   "}${i === group.items.length - 1 ? "└── " : "├── "}${item}`);
-    });
-  });
-  return lines.join("\n");
+/** Frameworks of all the repositories, the most used first. */
+function frameworksOf(allFacts) {
+  const counts = new Map();
+  for (const name of allFacts.flatMap((facts) => facts.frameworks ?? [])) counts.set(name, (counts.get(name) ?? 0) + 1);
+  return [...counts].sort(([a, x], [b, y]) => y - x || a.localeCompare(b)).map(([name]) => name);
 }
 
-function alignPercents(languages) {
-  const width = Math.max(...languages.map(({ language }) => language.length));
-  return languages.map(({ language, percent }) => `${language.padEnd(width)}  ${percent.toFixed(1).padStart(5)}%`);
+/** For each signal some repository has: how many have it, out of those where it is known. */
+function tooling(allFacts) {
+  return ["tests", "ci", "container"].flatMap((signal) => {
+    const known = allFacts.filter((facts) => facts.signals[signal] !== undefined);
+    const yes = known.filter((facts) => facts.signals[signal]).length;
+    return yes > 0 ? [{ signal, yes, known: known.length }] : [];
+  });
 }
 
 /** Table cells cannot hold pipes or line breaks. */

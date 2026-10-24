@@ -56,8 +56,8 @@ test("rejects unknown repositories, variants and too long taglines", () => {
 
 test("renders a profile without repositories", () => {
   const files = render({ repos: [], bio: "Hi." }, { profile: { login: "octocat", location: "Rome" }, repos: [] });
-  assert.match(files["README.md"], /### `\$ whoami`\n\nHi\.\n\nRome/);
-  assert.doesNotMatch(files["README.md"], /ls -l|tree stack|git log/);
+  assert.match(files["README.md"], /### `\$ whoami`\n\nHi\.\n\n📍 Rome/);
+  assert.doesNotMatch(files["README.md"], /ls -l|shields\.io|git log/);
   assert.doesNotMatch(files["header-dark.svg"], /0 projects|ls projects/);
   assert.match(files["header-dark.svg"], />Rome</);
 });
@@ -67,7 +67,16 @@ test("without showProjects the repositories are only summed up, never named", ()
   for (const content of Object.values(files)) {
     assert.doesNotMatch(content, /linkcheck|secret|Follow redirects/);
   }
-  assert.match(files["README.md"], /### `\$ tree stack\/`/);
+  assert.match(files["README.md"], /img\.shields\.io\/badge\/TypeScript-3178c6/);
   assert.doesNotMatch(files["README.md"], /ls -l projects|git log/);
   assert.doesNotMatch(files["header-dark.svg"], /ls projects/);
+});
+
+test("sums the stack up in the header and as badges, leaving out tiny languages", () => {
+  const tiny = extractFacts(snapshot({ metadata: { name: "tiny" }, tree: { complete: true, entries: [{ path: "main.ts", bytes: 99000 }, { path: "Dockerfile", bytes: 100 }] } }), NOW).facts;
+  const files = render({ repos: ["octocat/tiny"] }, { profile: { login: "octocat" }, repos: [tiny] });
+  assert.match(files["header-dark.svg"], /TypeScript {2}<\/tspan>/);
+  assert.doesNotMatch(files["header-dark.svg"], /Dockerfile/);
+  assert.match(files["README.md"], /!\[TypeScript\]\(https:\/\/img\.shields\.io\/badge\/TypeScript-3178c6\?style=flat-square&logo=typescript/);
+  assert.doesNotMatch(files["README.md"], /badge\/Dockerfile/);
 });
