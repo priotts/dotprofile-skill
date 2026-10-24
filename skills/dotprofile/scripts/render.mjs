@@ -25,6 +25,7 @@ export function render(config, factsFile) {
     labels: labelsFor(config.language),
     showProjects: config.showProjects === true,
     tooling: config.tooling !== false,
+    languageBars: languageBars(config.languageBars),
     credit: config.credit === false ? undefined : CREDIT_LINK,
   };
   return {
@@ -32,6 +33,11 @@ export function render(config, factsFile) {
     "header-dark.svg": style.header(input, variant, "dark"),
     "header-light.svg": style.header(input, variant, "light"),
   };
+}
+
+function languageBars(value = "stacked") {
+  if (!["stacked", "rows"].includes(value)) throw new Error(`dotprofile.json: languageBars must be "stacked" or "rows", not "${value}"`);
+  return value;
 }
 
 // Run only as a script, not when imported. pathToFileURL handles Windows paths (C:\...).

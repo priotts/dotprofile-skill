@@ -109,3 +109,11 @@ test('"tooling": false hides the tests, CI and container counts', () => {
   assert.doesNotMatch(files["header-dark.svg"], /tests \d|CI \d/);
   assert.match(render(config, factsFile)["README.md"], /badge\/tests-/);
 });
+
+test('"languageBars": "rows" draws one bar per language', () => {
+  const svg = render({ ...config, languageBars: "rows" }, factsFile)["header-dark.svg"];
+  assert.match(svg, /<text x="24" y="\d+" fill="[^"]+">TypeScript<\/text><rect x="200"/);
+  assert.doesNotMatch(svg, /stack-bar/);
+  assert.match(render(config, factsFile)["header-dark.svg"], /clip-path="url\(#stack-bar\)"/);
+  assert.throws(() => render({ ...config, languageBars: "pie" }, factsFile), /languageBars must be/);
+});

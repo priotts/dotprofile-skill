@@ -42,13 +42,16 @@ const TYPE_STEP = 0.07;
 const BAR_LINE = 22;
 const BAR_HEIGHT = 10;
 const BAR_GAP = 2;
+/** With `languageBars: "rows"`: where each bar starts (past the longest language name) and its length. */
+const ROW_BAR_X = 200;
+const ROW_BAR_WIDTH = 360;
 /** Languages below this share are noise in a summary (a Dockerfile, one CSS file). */
 const MIN_PERCENT = 1;
 /** Characters that comfortably fit on one line at this size, whatever the monospace font. */
 export const MAX_LINE_CHARS = 72;
 
 /**
- * input: { profile, repos: [{ facts, description? }], stack?: [facts], tagline?, labels, showProjects }
+ * input: { profile, repos: [{ facts, description? }], stack?: [facts], tagline?, labels, showProjects, languageBars? }
  * `repos` are the selected repositories; `stack` (default: their facts) is what the stack,
  * the badges and the statusline sum up.
  * Returns the SVG for one theme ("dark" or "light") of the variant. Project names appear only
@@ -104,7 +107,13 @@ function header(input, variantName, theme) {
   const frameworks = fitting(frameworksOf(allFacts), " · ");
   if (languages.length > 0 || frameworks.length > 0) {
     typed("cat stack.txt");
-    if (languages.length > 0) {
+    if (input.languageBars === "rows") {
+      // One bar per language. The bars start at a fixed column wide enough for any language name.
+      for (const { language, percent } of languages.slice(0, 3)) {
+        lines.push({ kind: "row", language, percent, at: clock, y });
+        y += LINE;
+      }
+    } else if (languages.length > 0) {
       // One bar split by language, as on GitHub. Drawn as shapes, so no glyph decides its look.
       lines.push({ kind: "bar", languages, at: clock, y });
       y += BAR_LINE;
@@ -136,6 +145,18 @@ function header(input, variantName, theme) {
   const label = [name, tagline].filter(Boolean).join(", ");
 
   const rows = lines.map((line) => {
+    if (line.kind === "row") {
+      const track = `x="${ROW_BAR_X}" y="${line.y - 11}" height="${BAR_HEIGHT}" rx="${BAR_HEIGHT / 2}"`;
+      const filled = Math.max(BAR_HEIGHT, (ROW_BAR_WIDTH * line.percent) / 100);
+      return [
+        `<g opacity="0">`,
+        `<text x="24" y="${line.y}" fill="${colors.fg}">${escapeXml(line.language)}</text>`,
+        `<rect ${track} width="${ROW_BAR_WIDTH}" fill="${colors.bar}"/>`,
+        `<rect ${track} width="${fmt(filled)}" fill="${colors.accent}"/>`,
+        `<text x="${ROW_BAR_X + ROW_BAR_WIDTH + 70}" y="${line.y}" text-anchor="end" fill="${colors.fg}">${line.percent.toFixed(1)}%</text>`,
+        `${appear(line.at)}</g>`,
+      ].join("");
+    }
     if (line.kind === "bar") {
       const width = WIDTH - 48;
       let x = 24;
