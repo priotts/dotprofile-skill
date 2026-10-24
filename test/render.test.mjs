@@ -80,3 +80,21 @@ test("sums the stack up in the header and as badges, leaving out tiny languages"
   assert.match(files["README.md"], /!\[TypeScript\]\(https:\/\/img\.shields\.io\/badge\/TypeScript-3178c6\?style=flat-square&logo=typescript/);
   assert.doesNotMatch(files["README.md"], /badge\/Dockerfile/);
 });
+
+test('with "stack": "all", active unselected repositories count in the stack but are never named', () => {
+  const selected = extractFacts(snapshot(), NOW).facts;
+  const angular = (name, extra) =>
+    extractFacts(snapshot({ metadata: { name, ...extra }, files: new Map([["package.json", '{"dependencies":{"@angular/core":"^20.0.0"}}']]) }), NOW).facts;
+  const active = angular("zz-dashboard");
+  const fork = angular("zz-forked", { fork: true });
+  const stale = { ...angular("zz-old"), derived: { ...active.derived, daysSinceLastCommit: 900 } };
+  const factsFile = { profile: { login: "octocat" }, repos: [selected, active, fork, stale] };
+  const base = { repos: ["octocat/linkcheck"], bio: "I check links." };
+
+  assert.doesNotMatch(render(base, factsFile)["README.md"], /Angular/);
+  const files = render({ ...base, stack: "all" }, factsFile);
+  assert.match(files["README.md"], /badge\/Angular-dd0031/);
+  assert.match(files["header-dark.svg"], /2 projects/);
+  for (const content of Object.values(files)) assert.doesNotMatch(content, /zz-/);
+  assert.throws(() => render({ ...base, stack: "everything" }, factsFile), /stack must be/);
+});

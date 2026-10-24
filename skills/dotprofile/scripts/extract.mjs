@@ -4,19 +4,22 @@
  *
  *   node extract.mjs list [--user <login>]
  *       The repositories the user owns, most recently pushed first, as JSON.
- *   node extract.mjs facts [<owner/repo>...] [--user <login>] [--out facts.json]
+ *   node extract.mjs facts [<owner/repo>...] [--all] [--user <login>] [--out facts.json]
  *       The facts of each repository plus the user's profile, written to facts.json. With no
- *       repository, only the profile.
+ *       repository, only the profile. With --all, also every other repository the user owns
+ *       that is not a fork, not archived and was pushed to in the last year: the source of
+ *       `"stack": "all"`.
  *
  * Token: GH_TOKEN or GITHUB_TOKEN, else `gh auth token`. Without one only public data is read.
  */
 import { writeFile } from "node:fs/promises";
 import { parseArgs, run } from "./lib/args.mjs";
 import { extractFacts } from "./lib/facts.mjs";
+import { ACTIVE_DAYS } from "./lib/config.mjs";
 import { createClient, listRepositories, readProfile, readSnapshot, resolveToken } from "./lib/github.mjs";
 
 run(async (argv) => {
-  const { options, positional } = parseArgs(argv);
+  const { options, positional } = parseArgs(argv, ["all"]);
   const [command, ...repos] = positional;
   const token = resolveToken();
   const client = createClient({ token });
@@ -28,7 +31,7 @@ run(async (argv) => {
     return;
   }
   if (command !== "facts") {
-    throw new Error("usage: extract.mjs list [--user <login>] | extract.mjs facts <owner/repo>... [--user <login>] [--out facts.json]");
+    throw new Error("usage: extract.mjs list [--user <login>] | extract.mjs facts <owner/repo>... [--all] [--user <login>] [--out facts.json]");
   }
 
   const now = new Date();
@@ -46,6 +49,14 @@ run(async (argv) => {
     if (!fallback) throw new Error(`could not read the profile (${error.message}): pass --user <login>`);
     profile = { login: fallback };
     warnings.profile = [`could not read the profile (${error.message}): only the login is known.`];
+  }
+  if (options.all) {
+    const since = now.getTime() - ACTIVE_DAYS * 86_400_000;
+    const listed = new Set(repos.map((fullName) => fullName.toLowerCase()));
+    for (const repo of await listRepositories(client, profile.login)) {
+      const recent = repo.pushedAt !== undefined && Date.parse(repo.pushedAt) >= since;
+      if (!repo.fork && !repo.archived && recent && !listed.has(repo.fullName.toLowerCase())) repos.push(repo.fullName);
+    }
   }
   const result = { extractedAt: now.toISOString(), profile, repos: [], warnings };
   for (const fullName of repos) {

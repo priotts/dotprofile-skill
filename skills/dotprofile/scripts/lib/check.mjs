@@ -1,5 +1,5 @@
 import { EXTENSIONS, FILE_NAMES, FRAMEWORKS } from "./tables.mjs";
-import { isUserWritten, textOf } from "./config.mjs";
+import { isUserWritten, stackOf, textOf } from "./config.mjs";
 
 /**
  * Looks for statements in the generated texts that the facts do not support. It is a safety
@@ -89,6 +89,9 @@ export function checkText(text, scope) {
 export function checkConfig(config, factsFile) {
   const byName = new Map(factsFile.repos.map((facts) => [facts.fullName.toLowerCase(), facts]));
   const selected = config.repos.map((entry) => byName.get((typeof entry === "string" ? entry : entry.repo).toLowerCase())).filter(Boolean);
+  // The bio and the tagline describe the selected repositories only, but with hidden projects
+  // they may name none of the repositories the stack is computed from either.
+  const scope = stackOf(config, factsFile, selected);
   const findings = [];
   const check = (where, value, scope) => {
     const text = textOf(value);
@@ -102,7 +105,7 @@ export function checkConfig(config, factsFile) {
     // The repositories are only a source: no text may name one, not even a user-written one.
     for (const [where, value] of [["tagline", config.tagline], ["bio", config.bio]]) {
       const text = textOf(value);
-      const named = text ? selected.filter((facts) => new RegExp(`(^|[^\\w-])${escape(facts.name)}(?![\\w-])`, "i").test(text)) : [];
+      const named = text ? scope.filter((facts) => new RegExp(`(^|[^\\w-])${escape(facts.name)}(?![\\w-])`, "i").test(text)) : [];
       if (named.length > 0) {
         const problems = named.map((facts) => `names ${facts.name}, but projects are hidden (showProjects is not true)`);
         const existing = findings.find((finding) => finding.where === where);

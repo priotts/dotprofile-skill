@@ -38,3 +38,13 @@ test("with hidden projects, no text may name a repository", () => {
   assert.match(checkConfig(config, factsFile)[0].problems[0], /names linkcheck/);
   assert.deepEqual(checkConfig({ ...config, showProjects: true }, factsFile), []);
 });
+
+test('with "stack": "all", the bio is checked against the selected repositories only', () => {
+  const other = extractFacts(snapshot({ metadata: { name: "bot" }, files: new Map([["package.json", '{"dependencies":{"@angular/core":"^20.0.0"}}']]) }), NOW).facts;
+  const factsFile = { profile: { login: "octocat" }, repos: [facts, other] };
+  const config = { repos: ["octocat/linkcheck"], stack: "all", bio: "I write Angular apps." };
+  assert.match(checkConfig(config, factsFile)[0].problems.join(), /Angular/);
+  // With hidden projects, no text may name a repository of the stack either.
+  const named = checkConfig({ ...config, bio: { text: "I made bot.", by: "user" } }, factsFile);
+  assert.match(named[0].problems[0], /names bot/);
+});
