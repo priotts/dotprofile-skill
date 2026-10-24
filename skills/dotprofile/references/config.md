@@ -32,6 +32,7 @@ The configuration holds the **choices, not the result**. Rendering it again with
 | `bio` | Optional. The "whoami" section. |
 | `repos` | In display order. An entry is `"owner/name"` or `{ "repo", "description" }`. Without a description, the GitHub description is used, if any. |
 | `stack` | What the stack summary (header, badges, statusline) counts. `"selected"` (default): the repositories in `repos`. `"all"`: also every other repository in the facts that is not a fork, not archived and had a commit in the last 365 days; extract them with `extract.mjs facts --all`. They are never named, and the bio is checked against the selected repositories only. |
+| `tooling` | `false` hides the tests, CI and container counts (badges and statusline). Default `true`. |
 | `credit` | `false` removes the small "Generated with dotprofile" line, which links to this skill's repository. Default `true`. It is independent of `showProjects`: ask the user, never remove it on your own. |
 
 ## Texts

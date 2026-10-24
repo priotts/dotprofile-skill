@@ -24,6 +24,7 @@ export function render(config, factsFile) {
     ...resolve(config, factsFile),
     labels: labelsFor(config.language),
     showProjects: config.showProjects === true,
+    tooling: config.tooling !== false,
     credit: config.credit === false ? undefined : CREDIT_LINK,
   };
   return {

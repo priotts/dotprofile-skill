@@ -122,7 +122,7 @@ function header(input, variantName, theme) {
   const height = barY + 30;
   const status = [
     allFacts.length > 0 && labels.projects(allFacts.length),
-    ...tooling(allFacts)
+    ...(input.tooling === false ? [] : tooling(allFacts))
       .filter(({ signal }) => signal !== "container")
       .map(({ signal, yes, known }) => `${labels[signal]} ${yes}/${known}`),
     profile.location,
@@ -210,7 +210,7 @@ function body(input) {
     ...frameworksOf(allFacts),
     ...(allFacts.some((facts) => facts.signals.container) ? ["Docker"] : []),
   ];
-  const counts = tooling(allFacts).map(({ signal, yes, known }) => countBadge(labels[signal], labels.inRepos(yes, known), yes / known));
+  const counts = (input.tooling === false ? [] : tooling(allFacts)).map(({ signal, yes, known }) => countBadge(labels[signal], labels.inRepos(yes, known), yes / known));
   const badges = [technologies.map(techBadge).join(" "), counts.join(" ")].filter(Boolean).join("<br>\n");
 
   const about = [bio, links.join(" · "), badges].filter(Boolean);

@@ -79,6 +79,7 @@ Saved in `dotprofile.json` ([full reference](skills/dotprofile/references/config
 | `language` | `en` or `it`, for the fixed labels |
 | `tagline` | one line under your name in the header |
 | `stack` | `selected` (default): the stack counts the chosen repositories. `all`: every repository you worked on in the last year (no forks, nothing archived), without naming them. |
+| `tooling` | `false` hides the tests, CI and container counts |
 | `credit` | `false` removes the "Generated with dotprofile" line |
 
 ## What you get

@@ -98,3 +98,10 @@ test('with "stack": "all", active unselected repositories count in the stack but
   for (const content of Object.values(files)) assert.doesNotMatch(content, /zz-/);
   assert.throws(() => render({ ...base, stack: "everything" }, factsFile), /stack must be/);
 });
+
+test('"tooling": false hides the tests, CI and container counts', () => {
+  const files = render({ ...config, tooling: false }, factsFile);
+  assert.doesNotMatch(files["README.md"], /badge\/(tests|CI|container)-/);
+  assert.doesNotMatch(files["header-dark.svg"], /tests \d|CI \d/);
+  assert.match(render(config, factsFile)["README.md"], /badge\/tests-/);
+});
