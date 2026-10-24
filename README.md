@@ -21,7 +21,9 @@ published, "used in production" on a weekend experiment. dotprofile works the ot
 
 Your repositories can be **shown** (a table of projects and their latest commits) or used **only
 as a source**: then no project is named, and they only feed the bio and a summary of your
-languages, frameworks and tooling. Handy when most of your work is private.
+languages, frameworks and tooling. Handy when most of your work is private. The stack can also
+sum up **every repository you worked on in the last year**, while the bio stays about the ones
+you picked.
 
 See [`examples/`](examples/) for a README generated from example facts.
 
