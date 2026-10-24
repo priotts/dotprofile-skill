@@ -87,6 +87,8 @@ Before writing, ask in one short message (all optional):
 - the language of the README (`en` or `it`, the labels exist for these);
 - the style variant: `github` (default, matches the GitHub page), `solarized` or `gruvbox`
   (each has a dark and a light version);
+- how the header draws the languages: one GitHub-style bar split by language (`languageBars:
+  "stacked"`, default) or one bar per language (`"rows"`);
 - anything they want said about themselves: role, focus, what they are looking for.
 
 What they write goes into the configuration as `{ "text": "...", "by": "user" }`.

@@ -31,7 +31,8 @@ The configuration holds the **choices, not the result**. Rendering it again with
 | `tagline` | Optional. One line under the name in the header, at most 72 characters. |
 | `bio` | Optional. The "whoami" section. |
 | `repos` | In display order. An entry is `"owner/name"` or `{ "repo", "description" }`. Without a description, the GitHub description is used, if any. |
-| `stack` | What the stack summary (header, badges, statusline) counts. `"selected"` (default): the repositories in `repos`. `"all"`: also every other repository in the facts that is not a fork, not archived and had a commit in the last 365 days; extract them with `extract.mjs facts --all`. They are never named, and the bio is checked against the selected repositories only. |
+| `stack` | What the stack summary (header, badges, statusline) counts. `"selected"` (default): the repositories in `repos`. `"all"`: also every other repository in the facts that is not a fork, not archived, has code and had a commit in the last 365 days (the profile repository never counts); extract them with `extract.mjs facts --all`. They are never named, and the bio is checked against the selected repositories only. |
+| `languageBars` | How the header draws the languages. `"stacked"` (default): one bar split by language in GitHub's colors, with a legend. `"rows"`: one bar per language (up to three) with its percentage. |
 | `tooling` | `false` hides the tests, CI and container counts (badges and statusline). Default `true`. |
 | `credit` | `false` removes the small "Generated with dotprofile" line, which links to this skill's repository. Default `true`. It is independent of `showProjects`: ask the user, never remove it on your own. |
 

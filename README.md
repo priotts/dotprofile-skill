@@ -81,6 +81,7 @@ Saved in `dotprofile.json` ([full reference](skills/dotprofile/references/config
 | `language` | `en` or `it`, for the fixed labels |
 | `tagline` | one line under your name in the header |
 | `stack` | `selected` (default): the stack counts the chosen repositories. `all`: every repository you worked on in the last year (no forks, nothing archived), without naming them. |
+| `languageBars` | `stacked` (default): one GitHub-style bar split by language. `rows`: one bar per language |
 | `tooling` | `false` hides the tests, CI and container counts |
 | `credit` | `false` removes the "Generated with dotprofile" line |
 
@@ -114,7 +115,7 @@ The formats are documented in [`references/`](skills/dotprofile/references/).
 ## Styles
 
 One style for now, `terminal`: a terminal window with typed commands (`whoami`, then
-`cat stack.txt` with your languages and frameworks) and a statusline, and sections written as
+`cat stack.txt` with a GitHub-style language bar and your frameworks) and a statusline, and sections written as
 shell commands. The stack is also summed up as [shields.io](https://shields.io) badges under the
 bio. Variants `github`, `solarized` and `gruvbox`, each with a dark and a light version.
 

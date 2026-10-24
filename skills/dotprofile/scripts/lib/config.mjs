@@ -41,11 +41,16 @@ export function resolve(config, factsFile) {
 
 /**
  * The repositories the stack summary is computed from: the selected ones, and with
- * `"stack": "all"` also every other active repository in the facts.
+ * `"stack": "all"` also every other active repository in the facts that has code (the profile
+ * repository itself and notes-only repositories would only inflate the count).
  */
 export function stackOf(config, factsFile, selected) {
   const mode = config.stack ?? "selected";
   if (mode === "selected") return selected;
   if (mode !== "all") throw new Error(`dotprofile.json: stack must be "selected" or "all", not "${mode}"`);
-  return [...selected, ...factsFile.repos.filter((facts) => !selected.includes(facts) && isActive(facts))];
+  const profileRepo = `${factsFile.profile.login}/${factsFile.profile.login}`.toLowerCase();
+  const others = factsFile.repos.filter(
+    (facts) => !selected.includes(facts) && isActive(facts) && facts.languages?.length > 0 && facts.fullName.toLowerCase() !== profileRepo,
+  );
+  return [...selected, ...others];
 }
