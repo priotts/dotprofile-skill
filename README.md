@@ -21,7 +21,9 @@ published, "used in production" on a weekend experiment. dotprofile works the ot
 
 Your repositories can be **shown** (a table of projects and their latest commits) or used **only
 as a source**: then no project is named, and they only feed the bio and a summary of your
-languages, frameworks and tooling. Handy when most of your work is private.
+languages, frameworks and tooling. Handy when most of your work is private. The stack can also
+sum up **every repository you worked on in the last year**, while the bio stays about the ones
+you picked.
 
 See [`examples/`](examples/) for a README generated from example facts.
 
@@ -78,6 +80,8 @@ Saved in `dotprofile.json` ([full reference](skills/dotprofile/references/config
 | `variant` | `github` (default), `solarized` or `gruvbox`, each with a dark and a light version, picked by the viewer's theme |
 | `language` | `en` or `it`, for the fixed labels |
 | `tagline` | one line under your name in the header |
+| `stack` | `selected` (default): the stack counts the chosen repositories. `all`: every repository you worked on in the last year (no forks, nothing archived), without naming them. |
+| `tooling` | `false` hides the tests, CI and container counts |
 | `credit` | `false` removes the "Generated with dotprofile" line |
 
 ## What you get
@@ -100,7 +104,7 @@ The skill drives these, but they work on their own:
 ```sh
 S=path/to/skills/dotprofile/scripts   # e.g. ~/.claude/skills/dotprofile/scripts
 node $S/extract.mjs list                                  # your repositories
-node $S/extract.mjs facts you/one you/two --out facts.json
+node $S/extract.mjs facts you/one you/two --out facts.json   # --all: plus every active repo
 node $S/check.mjs                                         # texts in dotprofile.json vs facts
 node $S/render.mjs                                        # README.md and the two headers
 ```

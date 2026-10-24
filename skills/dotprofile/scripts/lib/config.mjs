@@ -19,6 +19,12 @@ export async function readJson(path) {
 export const textOf = (value) => (typeof value === "string" ? value : value?.text);
 export const isUserWritten = (value) => typeof value === "object" && value?.by === "user";
 
+/** With `"stack": "all"`, a repository counts in the stack only if its last commit is at most this old. */
+export const ACTIVE_DAYS = 365;
+
+/** Whether an unselected repository is still worked on: not a fork, not archived, committed to recently. */
+export const isActive = (facts) => !facts.fork && !facts.archived && (facts.derived?.daysSinceLastCommit ?? Infinity) <= ACTIVE_DAYS;
+
 /** Joins the configuration with the facts. Throws with a clear message on any inconsistency. */
 export function resolve(config, factsFile) {
   if (!Array.isArray(config.repos)) throw new Error("dotprofile.json: repos must be a list");
@@ -29,5 +35,17 @@ export function resolve(config, factsFile) {
     if (!facts) throw new Error(`dotprofile.json lists ${key}, which is not in the facts: extract it first`);
     return { facts, description: textOf(entry.description) ?? facts.description, entry };
   });
-  return { profile: factsFile.profile, repos, bio: textOf(config.bio), tagline: textOf(config.tagline) };
+  const stack = stackOf(config, factsFile, repos.map(({ facts }) => facts));
+  return { profile: factsFile.profile, repos, stack, bio: textOf(config.bio), tagline: textOf(config.tagline) };
+}
+
+/**
+ * The repositories the stack summary is computed from: the selected ones, and with
+ * `"stack": "all"` also every other active repository in the facts.
+ */
+export function stackOf(config, factsFile, selected) {
+  const mode = config.stack ?? "selected";
+  if (mode === "selected") return selected;
+  if (mode !== "all") throw new Error(`dotprofile.json: stack must be "selected" or "all", not "${mode}"`);
+  return [...selected, ...factsFile.repos.filter((facts) => !selected.includes(facts) && isActive(facts))];
 }

@@ -69,6 +69,13 @@ name and description become public (it is shown without a link, and its commit m
 shown): include it only if the user confirms. With `showProjects: false`, only totals are
 published, but say that its languages and frameworks count in them.
 
+Then ask whether the **stack** (languages, frameworks, tests and CI counts) should sum up only
+the selected repositories (`"stack": "selected"`, the default) or **all** their active ones
+(`"stack": "all"`): every repository they own that is not a fork, not archived and had a commit
+in the last year. With `all`, the other repositories are only counted, never named or
+described, and the bio still describes the selected ones only. Their private repositories count
+too: say so.
+
 Choosing no repository at all is also valid: the README then has the header and the "whoami"
 section only, from the profile and what the user writes. Use `"repos": []` and run
 `extract.mjs facts --user <login>` with no repository.
@@ -87,8 +94,10 @@ What they write goes into the configuration as `{ "text": "...", "by": "user" }`
 ### 3. Extract the facts
 
 ```sh
-node ${CLAUDE_SKILL_DIR}/scripts/extract.mjs facts <owner/repo>... [--user <login>] --out facts.json
+node ${CLAUDE_SKILL_DIR}/scripts/extract.mjs facts <owner/repo>... [--all] [--user <login>] --out facts.json
 ```
+
+With `"stack": "all"`, pass `--all`: it also reads every active repository the user owns.
 
 Read the warnings it prints and mention the ones that matter (a truncated tree means unknown
 languages, a manifest that could not be parsed means missing dependencies). See

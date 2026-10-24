@@ -46,7 +46,9 @@ const MIN_PERCENT = 1;
 export const MAX_LINE_CHARS = 72;
 
 /**
- * input: { profile, repos: [{ facts, description? }], tagline?, labels, showProjects }
+ * input: { profile, repos: [{ facts, description? }], stack?: [facts], tagline?, labels, showProjects }
+ * `repos` are the selected repositories; `stack` (default: their facts) is what the stack,
+ * the badges and the statusline sum up.
  * Returns the SVG for one theme ("dark" or "light") of the variant. Project names appear only
  * with `showProjects`: otherwise the repositories are a source of facts, never named.
  */
@@ -58,7 +60,7 @@ function header(input, variantName, theme) {
   if (tagline && [...tagline].length > MAX_LINE_CHARS) {
     throw new Error(`The tagline has ${[...tagline].length} characters: the terminal header fits ${MAX_LINE_CHARS}`);
   }
-  const allFacts = repos.map(({ facts }) => facts);
+  const allFacts = input.stack ?? repos.map(({ facts }) => facts);
   const name = profile.name ?? profile.login;
 
   let clock = 0.4;
@@ -89,7 +91,7 @@ function header(input, variantName, theme) {
   }
   pause();
 
-  const names = fitting(input.showProjects ? allFacts.map((facts) => facts.name) : [], "  ");
+  const names = fitting(input.showProjects ? repos.map(({ facts }) => facts.name) : [], "  ");
   if (names.length > 0) {
     typed("ls projects/");
     output([{ text: names.join("  "), color: colors.accent }]);
@@ -106,7 +108,8 @@ function header(input, variantName, theme) {
       output([
         { text: `${language.padEnd(width)}  `, color: colors.fg },
         { text: "█".repeat(filled), color: colors.accent },
-        { text: "░".repeat(BAR_CELLS - filled), color: colors.dim },
+        // The track uses the same glyph as the bar, dimmed: ░ is drawn taller than █ in some fonts.
+        { text: "█".repeat(BAR_CELLS - filled), color: colors.dim, opacity: 0.3 },
         { text: `  ${percent.toFixed(1).padStart(5)}%`, color: colors.fg },
       ]);
     }
@@ -118,8 +121,8 @@ function header(input, variantName, theme) {
   const barY = y + 18;
   const height = barY + 30;
   const status = [
-    repos.length > 0 && labels.projects(repos.length),
-    ...tooling(allFacts)
+    allFacts.length > 0 && labels.projects(allFacts.length),
+    ...(input.tooling === false ? [] : tooling(allFacts))
       .filter(({ signal }) => signal !== "container")
       .map(({ signal, yes, known }) => `${labels[signal]} ${yes}/${known}`),
     profile.location,
@@ -131,7 +134,8 @@ function header(input, variantName, theme) {
   const rows = lines.map((line) => {
     if (line.kind === "output") {
       const spans = line.spans
-        .map(({ text, color, weight }) => `<tspan fill="${color}"${weight ? ` font-weight="${weight}"` : ""}>${escapeXml(text)}</tspan>`)
+        .filter(({ text }) => text !== "")
+        .map(({ text, color, weight, opacity }) => `<tspan fill="${color}"${weight ? ` font-weight="${weight}"` : ""}${opacity ? ` fill-opacity="${opacity}"` : ""}>${escapeXml(text)}</tspan>`)
         .join("");
       return `<text x="24" y="${line.y}" xml:space="preserve" opacity="0">${spans}${appear(line.at)}</text>`;
     }
@@ -178,13 +182,13 @@ const appear = (seconds) => `<set attributeName="opacity" to="1" begin="${fmt(se
 const fmt = (seconds) => (Math.round(seconds * 100) / 100).toString();
 
 /**
- * input: { profile, repos: [{ facts, description? }], bio?, labels, credit, showProjects } →
+ * input: { profile, repos: [{ facts, description? }], stack?, bio?, labels, credit, showProjects } →
  * Markdown. The project table and the git log name the projects, so they need `showProjects`;
  * the badges only sum the repositories up.
  */
 function body(input) {
   const { profile, repos, bio, labels } = input;
-  const allFacts = repos.map(({ facts }) => facts);
+  const allFacts = input.stack ?? repos.map(({ facts }) => facts);
   const out = [];
   const alt = escapeXml(profile.name ?? profile.login);
   out.push(
@@ -206,7 +210,7 @@ function body(input) {
     ...frameworksOf(allFacts),
     ...(allFacts.some((facts) => facts.signals.container) ? ["Docker"] : []),
   ];
-  const counts = tooling(allFacts).map(({ signal, yes, known }) => countBadge(labels[signal], labels.inRepos(yes, known), yes / known));
+  const counts = (input.tooling === false ? [] : tooling(allFacts)).map(({ signal, yes, known }) => countBadge(labels[signal], labels.inRepos(yes, known), yes / known));
   const badges = [technologies.map(techBadge).join(" "), counts.join(" ")].filter(Boolean).join("<br>\n");
 
   const about = [bio, links.join(" · "), badges].filter(Boolean);
